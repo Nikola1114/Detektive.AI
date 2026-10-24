@@ -15,6 +15,14 @@ export type Verdict = "solved" | "incomplete" | "incorrect" | "insufficient";
 export type SceneKind = "office" | "police" | "security" | "bar" | "penthouse" | "newsroom" | "flat" | "hotel" | "museum" | "manor" | "shop";
 export type NoteTag = "note" | "fact" | "claim" | "theory";
 
+/** How a suspect's lines are read aloud by the browser's speech engine. */
+export interface VoiceProfile {
+  gender: "female" | "male";
+  pitch: number; // 0.5–1.5
+  rate: number; // 0.7–1.3
+  seed: number; // picks a distinct voice among good candidates
+}
+
 export interface PortraitSpec {
   skin: string;
   hair: "bob" | "short" | "slick" | "bald" | "long" | "bun" | "messy" | "receding" | "wavy";
@@ -95,6 +103,7 @@ export interface SuspectView {
   motive: string;
   alibi: string;
   portrait: PortraitSpec;
+  voice: VoiceProfile;
   greeting: string;
   mood: Mood;
   stress: number;
@@ -202,6 +211,8 @@ export interface InterrogateResult {
   stress: number;
   trust: number;
   engine: "authored" | "ai";
+  /** Set when the player's own words cited a piece of evidence. */
+  citedEvidence?: string;
 }
 
 export interface ResolutionScene { heading: string; time?: string; text: string; }

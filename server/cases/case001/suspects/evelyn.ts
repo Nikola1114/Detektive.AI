@@ -18,6 +18,8 @@ export const evelyn: SuspectDef = {
   motive: "The divorce settlement. A dead husband cannot fight her in court.",
   alibi: "Claims she spent the evening at the Children's Hospital gala at the Grand Meridian Hotel.",
   portrait: { skin: "#d8b8a0", hair: "bob", hairColor: "#1f1814", outfit: "dress", outfitColor: "#151519", earrings: true, age: "mid", build: "slim" },
+  voice: { gender: "female", pitch: 0.95, rate: 0.92, seed: 1 },
+  about: "I direct the Mercer Foundation — museums, scholarships, the respectable end of Daniel's money. I was his wife for fourteen years. Officially, I still am.",
   initial: { stress: 15, trust: 30, mood: "guarded" },
   greeting: "Detective. I assume this won't take long — I have a lawyer who bills by the quarter hour, and so, apparently, do you.",
   topics: [

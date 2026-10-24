@@ -13,7 +13,7 @@ import type { CaseDef, DeductionDef, EvidenceDef, HotspotDef, LocationDef, Respo
 import { registerGenerated } from "../cases/registry.ts";
 import { GameError } from "../engine/engine.ts";
 import { validateCase } from "../engine/validate.ts";
-import { FIRST, HAIRC, HAIRS, LAST, METHODS, MOTIVES, OUTFITC, OUTFITS, PERSONALITIES, SECRETS, SETTINGS, SKIN, type SettingPool } from "./pools.ts";
+import { FEMALE_FIRST, HAIRC, LAST, MALE_FIRST, METHODS, MOTIVES, OUTFITC, PERSONALITIES, SECRETS, SETTINGS, SKIN, type SettingPool } from "./pools.ts";
 
 type Difficulty = "Beginner" | "Intermediate" | "Expert";
 
@@ -67,9 +67,9 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
 
   // ── 1. Canonical truth ──
   const usedNames = new Set<string>();
-  const person = () => {
+  const person = (gender: "female" | "male" = rnd() < 0.5 ? "female" : "male") => {
     for (;;) {
-      const n = `${pick(FIRST)} ${pick(LAST)}`;
+      const n = `${pick(gender === "female" ? FEMALE_FIRST : MALE_FIRST)} ${pick(LAST)}`;
       const last = n.split(" ")[1];
       if (![...usedNames].some((u) => u.endsWith(last))) { usedNames.add(n); return n; }
     }
@@ -93,8 +93,10 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
   const greetings = shuffle(["Detective. Ask what you need to ask.", "I'll help however I can.", "Is this going to take long?", "I've already told the officers everything.", "Go on, then.", "I suppose you'd better sit down.", "Detective. I haven't slept.", "Let's get this over with."]);
 
   const people = roles.map((r, i) => {
-    const name = person();
+    const gender: "female" | "male" = rnd() < 0.5 ? "female" : "male";
+    const name = person(gender);
     return {
+      gender,
       id: `s${i + 1}`, name, first: name.split(" ")[0], initials: name.split(" ").map((p) => p[0]).join("."),
       role: r, culprit: i === culpritIdx, size: sizes[i], secret: secrets[i % secrets.length],
       secretPlace: otherPlaces[(i + 1) % otherPlaces.length].name, age: 26 + Math.floor(rnd() * 38),
@@ -110,26 +112,26 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
   const add = (e: EvidenceDef) => { evidence.push(e); return e.id; };
   const crimeWord = crime === "murder" ? "murder" : crime === "theft" ? "theft" : "disappearance";
 
-  add({ id: "e_trace", title: "Partial Shoe Print", type: "forensic", importance: "key", icon: "footprint", source: pool.scene.name,
+  add({ id: "e_trace", aliases: ["shoe print", "footprint", "print", "shoe size", `size ${C.size}`], title: "Partial Shoe Print", type: "forensic", importance: "key", icon: "footprint", source: pool.scene.name,
     summary: `A clear partial print of a size-${C.size} shoe, left in spilled dust near where the ${crimeWord} took place.`,
     detail: `Forensics lifted a partial shoe print from the floor of ${pool.scene.name}. Size ${C.size}, heel worn on the outer edge. It was made recently — after the floor was last swept at 18:00.` });
   add({ id: "e_files", title: "Persons of Interest File", type: "document", importance: "supporting", icon: "folder", source: pool.police.name,
     summary: "Background on each person of interest, including shoe sizes taken during initial interviews.",
     detail: people.map((p) => `• ${p.name} — ${p.role.profession} — shoe size ${p.size}`).join("\n") });
-  add({ id: "e_weapon", title: method.weapon, type: "physical", importance: "key", icon: "evidence-bag", source: pool.scene.name,
+  add({ id: "e_weapon", aliases: [method.weapon, "weapon"], title: method.weapon, type: "physical", importance: "key", icon: "evidence-bag", source: pool.scene.name,
     summary: method.weaponText, detail: `${method.weaponText} It has been bagged for the lab.` });
   add({ id: "e_forensic", title: "Forensic Report", type: "forensic", importance: "key", icon: "report", source: pool.police.name,
     summary: `${method.forensic.split(".")[0]}. The ${crimeWord} happened between ${hhmm(tCrime - 10)} and ${hhmm(tCrime + 10)}.`,
     detail: `${method.forensic}\nEstimated time of the ${crimeWord}: between ${hhmm(tCrime - 10)} and ${hhmm(tCrime + 10)}.`,
     timeline: [{ time: hhmm(tCrime - 10), text: `Earliest possible time of the ${crimeWord}.` }] });
-  add({ id: "e_log", title: pool.access.log, type: "document", importance: "key", icon: "list", source: pool.places[0].name,
+  add({ id: "e_log", aliases: [pool.access.log, pool.access.item, "key log", "logbook", hhmm(tEnter)], title: pool.access.log, type: "document", importance: "key", icon: "list", source: pool.places[0].name,
     summary: `${cap(pool.access.item)} was used on the ${pool.access.device} at ${hhmm(tEnter)} and again at ${hhmm(tLeave)}.`,
     detail: `Entries for the night:\n• ${hhmm(tEnter)} — ${pool.access.device} — ${pool.access.item}\n• ${hhmm(tLeave)} — ${pool.access.device} — ${pool.access.item}\nNo other entries between 19:00 and midnight.`,
     timeline: [{ time: hhmm(tEnter), text: `${cap(pool.access.item)} opens the ${pool.access.device}.` }, { time: hhmm(tLeave), text: `${cap(pool.access.item)} used again on the ${pool.access.device}.` }] });
-  add({ id: "e_registry", title: pool.access.registry, type: "document", importance: "key", icon: "id-card", source: pool.places[0].name,
+  add({ id: "e_registry", aliases: [pool.access.registry, "registered to you", "your key", "never reported lost"], title: pool.access.registry, type: "document", importance: "key", icon: "id-card", source: pool.places[0].name,
     summary: `${cap(pool.access.item)} is registered to ${C.name}. It was never reported lost.`,
     detail: `${cap(pool.access.item)} — issued to ${C.name}. Status: in use. Loss reports: none.\nAll other keys are accounted for and were locked away overnight.` });
-  add({ id: "e_break", title: pool.alibiBreak.title, type: "document", importance: "key", icon: "car", source: pool.police.name,
+  add({ id: "e_break", aliases: [pool.alibiBreak.title, pool.alibiBreak.noun, hhmm(tBreak), "seen near"], title: pool.alibiBreak.title, type: "document", importance: "key", icon: "car", source: pool.police.name,
     summary: `${cap(pool.alibiBreak.noun)} puts ${C.name} two minutes from ${pool.scene.name} at ${hhmm(tBreak)}.`,
     detail: `Checking everyone's account of the evening turned up ${pool.alibiBreak.noun}, time-stamped ${hhmm(tBreak)}, placing ${C.name} two minutes from ${pool.scene.name}.`,
     timeline: [{ time: hhmm(tBreak), text: `${C.name} is recorded two minutes from ${pool.scene.name}.` }] });
@@ -239,7 +241,14 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
 
   // ── 5. Suspects and authored dialogue ──
   const suspects: SuspectDef[] = people.map((p) => {
-    const portrait: PortraitSpec = { skin: pick(SKIN), hair: pick(HAIRS), hairColor: pick(HAIRC), outfit: pick(OUTFITS), outfitColor: pick(OUTFITC), age: p.age > 50 ? "older" : p.age < 34 ? "young" : "mid", glasses: rnd() < 0.25, beard: rnd() < 0.2 ? "stubble" : undefined, earrings: rnd() < 0.2 };
+    const female = p.gender === "female";
+    const portrait: PortraitSpec = {
+      skin: pick(SKIN), hairColor: pick(HAIRC), outfitColor: pick(OUTFITC), age: p.age > 50 ? "older" : p.age < 34 ? "young" : "mid", glasses: rnd() < 0.25,
+      hair: pick(female ? ["bob", "long", "bun", "wavy"] as const : ["short", "slick", "messy", "receding", "bald"] as const),
+      outfit: pick(female ? ["blouse", "dress", "coat", "turtleneck"] as const : ["suit", "jacket", "coat", "sweater", "uniform"] as const),
+      beard: !female && rnd() < 0.35 ? pick(["stubble", "full", "moustache"] as const) : undefined, earrings: female && rnd() < 0.5,
+    };
+    const voice = { gender: p.gender, pitch: (female ? 1.05 : 0.88) + rnd() * 0.15, rate: 0.9 + rnd() * 0.2, seed: Math.floor(rnd() * 8) };
     const other = pick(people.filter((q) => q.id !== p.id));
     const common = [
       { id: "victim", label: crime === "theft" ? "What do you know about the theft?" : `Tell me about ${victimName}.`, keywords: ["victim", "know", "about", "relationship", victimName.split(" ")[0].toLowerCase(), "theft", "stolen"],
@@ -252,7 +261,7 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
     const base = {
       id: p.id, name: p.name, age: p.age, height: p.height, profession: p.role.profession, relation: p.role.relation,
       personality: p.personality, bio: `${p.role.profession}. ${p.role.relation} of ${crime === "theft" ? "the institution" : victimName}.`, motive: p.role.motive,
-      portrait, greeting: p.greeting, initial: { stress: p.stress, trust: p.trust, mood: "guarded" as const }, defaultReaction: ["I don't know anything about that.", "What does that have to do with me?", "Never seen it."],
+      portrait, voice, greeting: p.greeting, about: `${p.role.profession}. ${p.role.relation}. That's all there is to say about me.`, initial: { stress: p.stress, trust: p.trust, mood: "guarded" as const }, defaultReaction: ["I don't know anything about that.", "What does that have to do with me?", "Never seen it."],
       deflection: "Isn't working that out your job, detective?", unknown: ["Sorry?", "I don't follow."],
     };
     if (p.culprit) {

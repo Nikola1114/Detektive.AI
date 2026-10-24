@@ -38,6 +38,8 @@ const OUTPUT_SCHEMA = {
 
 export interface AiTurn {
   suspect: SuspectDef;
+  /** Player id, used to cap AI replies per player per day (protects the host's API bill). */
+  budgetKey?: string;
   progress: SuspectProgress;
   playerText: string;
   /** The authored line for this turn, or null when the question matched nothing. */
@@ -88,8 +90,19 @@ export function validateReply(reply: string, t: AiTurn): boolean {
 }
 
 /** Returns an AI-voiced line, or null to signal the caller should use the authored text. */
+const DAILY_LIMIT = Number(process.env.DETECTIVE_AI_DAILY_LIMIT || 300);
+const usage = new Map<string, { day: string; count: number }>();
+function withinBudget(key = "anon"): boolean {
+  const day = new Date().toISOString().slice(0, 10);
+  const u = usage.get(key);
+  if (!u || u.day !== day) { usage.set(key, { day, count: 1 }); return true; }
+  if (u.count >= DAILY_LIMIT) return false;
+  u.count++;
+  return true;
+}
+
 export async function voiceTurn(t: AiTurn): Promise<{ reply: string; mood: Mood } | null> {
-  if (!client) return null;
+  if (!client || !withinBudget(t.budgetKey)) return null;
   try {
     const response = await client.beta.messages.create({
       model: MODEL,

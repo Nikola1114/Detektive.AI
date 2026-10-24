@@ -92,3 +92,51 @@ test("three failed accusations close the case", async () => {
   for (let i = 0; i < 3; i++) accuse(ctx, { suspectId: "adrian", motive: "m_debt", method: "x_lighthouse", sequence: "s_console", evidence: ["camera_log", "incident_report", "napkin"] });
   assert.equal(ctx.p.status, "failed");
 });
+
+test("free text tolerates typos and different wording", async () => {
+  const ctx = fresh();
+  await interrogate(ctx, "marcus", { text: "were where you last nigth?" });
+  assert.ok("T_MARCUS_ALIBI" in ctx.p.discovered, "typo'd alibi question understood");
+  const r = await interrogate(ctx, "evelyn", { text: "What were you doing yesterday evening?" });
+  assert.match(r.reply, /Grand Meridian/);
+});
+
+test("mentioning found evidence in a question confronts the suspect with it", async () => {
+  const ctx = fresh();
+  await interrogate(ctx, "marcus", { topicId: "alibi" });
+  travel(ctx, "office"); inspect(ctx, "h_door"); act(ctx, "h_door", "photograph");
+  travel(ctx, "security"); inspect(ctx, "h_garage"); act(ctx, "h_garage", "collect");
+  const r = await interrogate(ctx, "marcus", { text: "Then why did your car come back into the garage at 22:03?" });
+  assert.equal(r.citedEvidence, "garage_log");
+  assert.match(r.reply, /I came back/);
+});
+
+test("evidence the player hasn't found can't be cited", async () => {
+  const ctx = fresh();
+  const r = await interrogate(ctx, "marcus", { text: "Your car was in the garage at 22:03." });
+  assert.equal(r.citedEvidence, undefined);
+  assert.ok(!ctx.p.suspects.marcus.revealed.includes("returned"));
+});
+
+test("follow-ups, greetings and unknown questions get sensible replies", async () => {
+  const ctx = fresh();
+  const hi = await interrogate(ctx, "adrian", { text: "Hello" });
+  assert.match(hi.reply, /twenty-two years/i);
+  await interrogate(ctx, "adrian", { topicId: "outage" });
+  const stress = ctx.p.suspects.adrian.stress;
+  const why = await interrogate(ctx, "adrian", { text: "why?" });
+  assert.ok(why.reply.length > 0);
+  assert.equal(ctx.p.suspects.adrian.stress, stress + 3, "pressing raises stress once");
+  await interrogate(ctx, "adrian", { text: "why?" });
+  assert.equal(ctx.p.suspects.adrian.stress, stress + 3, "but can't be farmed");
+  await interrogate(ctx, "adrian", { text: "What's your favourite colour?" });
+  assert.equal(ctx.p.suspects.adrian.history.at(-1)!.role, "system", "unknown questions add a hint");
+  const me = await interrogate(ctx, "adrian", { text: "Tell me about yourself" });
+  assert.match(me.reply, /Head of security/);
+});
+
+test("specific words beat generic time phrases", async () => {
+  const ctx = fresh();
+  const r = await interrogate(ctx, "sofia", { text: "Who was on Daniel's calender for last night?" });
+  assert.match(r.reply, /M\.R\./);
+});

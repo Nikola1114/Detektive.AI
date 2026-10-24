@@ -36,6 +36,8 @@ export const sofia: SuspectDef = {
   motive: "None apparent. By all accounts Mercer valued her highly.",
   alibi: "Claims she worked from home on the company VPN after leaving at 20:15.",
   portrait: { skin: "#e2c2a8", hair: "bun", hairColor: "#3d2a1f", outfit: "blouse", outfitColor: "#cfc6b8", glasses: true, age: "young", build: "slim" },
+  voice: { gender: "female", pitch: 1.12, rate: 1.0, seed: 3 },
+  about: "I'm Mr. Mercer's executive assistant. I manage his calendar, his correspondence, the building bookings. I've been at Lumen almost two years.",
   initial: { stress: 20, trust: 40, mood: "calm" },
   greeting: "Detective. I've brought his calendar for the last month, in case it helps. I didn't know what else to do.",
   topics: [
@@ -72,7 +74,7 @@ export const sofia: SuspectDef = {
       ] },
     { id: "brother", label: "Tell me about Thomas Kessler.", keywords: ["thomas", "kessler", "brother", "tom", "family"], requires: { anyEvidence: ["dossier", "brother_photo", "patent"] },
       nodes: [brotherAdmission, { text: "Tom is dead. Daniel made sure of that, in every way but the legal one.", mood: "shaken" }] },
-    { id: "rapport", label: "This must be a shock for you.", keywords: ["sorry", "shock", "difficult", "hard", "okay", "are you", "understand", "condolence", "take your time"],
+    { id: "rapport", label: "This must be a shock for you.", keywords: ["sorry", "shock", "difficult", "hard", "are you okay", "are you alright", "how are you", "understand", "condolence", "take your time"],
       nodes: [
         { when: { notRevealed: ["rapport1"] }, text: "...Thank you. Nobody's asked how I am. I keep reorganising his calendar for next week. Cancelling things.", mood: "calm", trust: 10, stress: -10, reveals: ["rapport1"] },
         { text: "I'm fine. Really.", mood: "calm", stress: -10 },

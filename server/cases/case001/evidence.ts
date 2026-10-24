@@ -7,28 +7,28 @@ import type { EvidenceDef } from "../types.ts";
 export const evidence: EvidenceDef[] = [
   // ───────────── Mercer's office (crime scene) ─────────────
   {
-    id: "watch", title: "Broken Wristwatch", type: "physical", importance: "key", icon: "watch", source: "Mercer's Office",
+    id: "watch", aliases: ["broken watch", "wristwatch", "his watch", "the watch", "22:17"], title: "Broken Wristwatch", type: "physical", importance: "key", icon: "watch", source: "Mercer's Office",
     summary: "Mercer's silver watch, glass shattered, hands frozen at 22:17.",
     detail: "A silver Vacheron wristwatch lies beneath the desk. The crystal is cracked in a starburst and the hands are frozen at 22:17. The clasp is bent outward, as if it was wrenched against something hard. A matching scuff mark marks the steel edge of the desk.",
     timeline: [{ time: "22:17", text: "Mercer's wristwatch stops after a hard impact against the desk edge." }],
   },
   {
-    id: "whiskey", title: "Whiskey Glass", type: "physical", importance: "supporting", icon: "glass", source: "Mercer's Office",
+    id: "whiskey", aliases: ["whiskey", "whisky", "scotch", "the glass", "his drink"], title: "Whiskey Glass", type: "physical", importance: "supporting", icon: "glass", source: "Mercer's Office",
     summary: "A single half-finished glass of single malt with a faint chalky residue.",
     detail: "A heavy crystal tumbler, half full of single malt. A thin chalky film clings to the bottom. Only one glass has been used; the decanter on the bar cart is nearly full. The forensic team flagged the residue as a possible sedative.",
   },
   {
-    id: "lighthouse", title: "Crystal Lighthouse Award", type: "physical", importance: "key", icon: "trophy", source: "Mercer's Office",
+    id: "lighthouse", aliases: ["lighthouse", "crystal award", "beacon award", "the award", "trophy"], title: "Crystal Lighthouse Award", type: "physical", importance: "key", icon: "trophy", source: "Mercer's Office",
     summary: "A heavy crystal award sitting a few centimetres off its own dust outline. The base is suspiciously clean.",
     detail: "The 'Beacon of Innovation' award, a 2.4 kg crystal lighthouse engraved DANIEL MERCER — THE LIGHT THAT LEADS. Every other object on the shelf wears a fine layer of dust; this one has been wiped spotless and set back down about four centimetres from the clean outline where it used to stand. Under magnification there is a rust-brown trace in the seam where the crystal meets its steel base.",
   },
   {
-    id: "cufflink", title: "Torn Cufflink", type: "physical", importance: "key", icon: "cufflink", source: "Mercer's Office",
+    id: "cufflink", aliases: ["cufflink", "cuff link", "cufflinks"], title: "Torn Cufflink", type: "physical", importance: "key", icon: "cufflink", source: "Mercer's Office",
     summary: "A silver cufflink engraved 'M.R.', its post snapped, under the desk.",
     detail: "A silver oval cufflink engraved with the initials M.R. The post has snapped clean off, the way it would if a sleeve were yanked hard. Daniel Mercer wore buttoned cuffs; this is not his.",
   },
   {
-    id: "bootprint", title: "Rain-Wet Boot Print", type: "forensic", importance: "key", icon: "footprint", source: "Mercer's Office",
+    id: "bootprint", aliases: ["boot print", "footprint", "shoe print", "size 37"], title: "Rain-Wet Boot Print", type: "forensic", importance: "key", icon: "footprint", source: "Mercer's Office",
     summary: "A partial print of a small heeled ankle boot, left in rainwater just inside the door.",
     detail: "A partial print preserved in a dried film of rainwater and street grit just inside the office door. Forensics photographed it under oblique light: a women's heeled ankle boot, EU size 37, with a chevron sole pattern. The grit is consistent with the street outside — whoever left it walked in from the rain, not from inside the building.",
   },
@@ -38,7 +38,7 @@ export const evidence: EvidenceDef[] = [
     detail: "A steel-core door with an electronic keycard reader. A plate reads: SECURE SUITE — AUTO-LOCK ON CLOSE. The door cannot be left unlocked; anyone leaving simply pulls it shut and the suite seals itself. Every card swipe is recorded on the building access server in the Security Office.",
   },
   {
-    id: "computer", title: "Mercer's Computer", type: "digital", importance: "key", icon: "monitor", source: "Mercer's Office",
+    id: "computer", aliases: ["his computer", "his email", "last email", "22:31", "22:43", "the email to his lawyer"], title: "Mercer's Computer", type: "digital", importance: "key", icon: "monitor", source: "Mercer's Office",
     summary: "His last email went out at 22:31. The keyboard was last touched at 22:43.",
     detail: "The mail client shows an email sent at 22:31 to his lawyer, Ruth Abernathy:\n\n\"Ruth — Marcus came back tonight. It got physical; he broke my watch and nearly my wrist. Call me at 8. We go to the police about Halvorsen first thing. And I've found our leak — someone very close to me. I'm dealing with that tonight too. — D.\"\n\nThe system activity log records the last keyboard input at 22:43:50. After that, nothing.",
     timeline: [
@@ -47,17 +47,17 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "pills", title: "Prescription Bottle", type: "physical", importance: "minor", icon: "pills", source: "Mercer's Office",
+    id: "pills", aliases: ["sleeping pills", "zolpidem", "prescription", "pills"], title: "Prescription Bottle", type: "physical", importance: "minor", icon: "pills", source: "Mercer's Office",
     summary: "Zolpidem 10 mg, prescribed to Daniel Mercer. Dissolvable tablets.",
     detail: "An amber bottle in the top desk drawer: ZOLPIDEM 10 mg, orally dissolving. Patient: Daniel Mercer. Prescriber: Dr. A. Lindqvist. 'Take one at bedtime. Do not combine with alcohol.' Eleven of thirty remain. A sticky note on the lid in Mercer's hand: 'late nights — 1 w/ the scotch'.",
   },
   {
-    id: "charger", title: "Empty Phone Charger", type: "physical", importance: "supporting", icon: "cable", source: "Mercer's Office",
+    id: "charger", aliases: ["his phone is missing", "missing phone", "charger"], title: "Empty Phone Charger", type: "physical", importance: "supporting", icon: "cable", source: "Mercer's Office",
     summary: "A charging cable on the desk with nothing plugged in. Mercer's phone is missing.",
     detail: "A braided charging cable runs from the desk dock to nowhere. Mercer's phone was not on the body, in the office, or anywhere on the 42nd floor. Somebody took it.",
   },
   {
-    id: "audit", title: "Halvorsen Audit Printout", type: "document", importance: "supporting", icon: "papers", source: "Mercer's Office",
+    id: "audit", aliases: ["halvorsen", "4.2 million", "the audit", "shell company"], title: "Halvorsen Audit Printout", type: "document", importance: "supporting", icon: "papers", source: "Mercer's Office",
     summary: "Accounts showing $4.2M paid to 'Halvorsen Consulting', annotated in Mercer's hand.",
     detail: "Twelve pages of payment records to Halvorsen Consulting Ltd. totalling $4.2 million over eighteen months. Mercer's annotations in red ink: 'Halvorsen = shell. Registered to M.R.'s brother-in-law.' On the final page: 'Emailed M. 19:40 — 22:00 tonight. Explanation or lawyer.'",
     timeline: [{ time: "19:40", text: "Mercer emails Marcus Reed demanding a 22:00 meeting about the Halvorsen payments." }],
@@ -70,18 +70,18 @@ export const evidence: EvidenceDef[] = [
     detail: "Sgt. Kane's dossiers on the five persons of interest:\n• Evelyn Mercer — 43 — 1.72 m\n• Marcus Reed — 38 — 1.80 m\n• Sofia Bennett — 29 — 1.64 m\n• Adrian Cole — 51 — 1.88 m\n• Oliver Hayes — 34 — 1.83 m\nAll five have been asked for initial statements.",
   },
   {
-    id: "autopsy", title: "Autopsy Report", type: "forensic", importance: "key", icon: "report", source: "BCPD Central Precinct",
+    id: "autopsy", aliases: ["autopsy", "time of death", "cause of death", "bruises", "bruised wrists"], title: "Autopsy Report", type: "forensic", importance: "key", icon: "report", source: "BCPD Central Precinct",
     summary: "Blunt force trauma to the left temple. Death between 22:30 and 23:15. Wrist bruises are older.",
     detail: "Medical Examiner Dr. Hanna Voss:\n• Cause of death: a single blunt force blow to the left temple. Embedded in the wound are microscopic fragments of lead crystal.\n• Estimated time of death: between 22:30 and 23:15.\n• Bruising on both wrists consistent with being gripped hard, inflicted roughly 20–40 minutes before death.\n• Blood alcohol 0.06%. Zolpidem present at a normal therapeutic level — a single tablet, not an overdose. Not a factor in death.",
     timeline: [{ time: "22:30", text: "Earliest medically possible time of death (window 22:30–23:15)." }],
   },
   {
-    id: "lab_lighthouse", title: "Lab Report: Crystal Lighthouse", type: "forensic", importance: "key", icon: "microscope", source: "BCPD Forensics",
+    id: "lab_lighthouse", aliases: ["blood on the award", "lab report", "blood in the base", "silk fibres", "silk fibers"], title: "Lab Report: Crystal Lighthouse", type: "forensic", importance: "key", icon: "microscope", source: "BCPD Forensics",
     summary: "Mercer's blood in the award's base seam. Wiped with a silk-blend fabric. No usable prints.",
     detail: "The crystal lighthouse was wiped, but not well enough. The seam between crystal and steel base contains blood matching Daniel Mercer. Chips along the lamp edge match the crystal fragments recovered from the wound. Fibres caught in the seam: silk blend, dark blue. No usable fingerprints — the surface was wiped with fabric.",
   },
   {
-    id: "phone_records", title: "Mercer's Phone Records", type: "document", importance: "key", icon: "phone", source: "BCPD Central Precinct",
+    id: "phone_records", aliases: ["phone records", "call log", "you called him", "he called you", "you texted him", "he texted you", "21:12", "22:36"], title: "Mercer's Phone Records", type: "document", importance: "key", icon: "phone", source: "BCPD Central Precinct",
     summary: "Carrier metadata: a call to Evelyn at 20:30, a text to Sofia at 21:12, a text from Sofia at 22:36.",
     detail: "Subpoenaed carrier metadata for Mercer's mobile (content not included):\n• 20:30 — outgoing call to Evelyn Mercer, 4 min 12 s\n• 21:12 — outgoing text to Sofia Bennett\n• 22:36 — incoming text from Sofia Bennett\n• 22:51 — handset disconnects from the network (powered off). Last cell: Blackwood Tower.",
     timeline: [
@@ -97,7 +97,7 @@ export const evidence: EvidenceDef[] = [
     detail: "Bagged at the scene: a leather wallet ($340, cards intact — not a robbery), a key ring with the fob for his Harbor Heights penthouse, and a gold pen. Notably absent: his phone. The penthouse fob gives you access to his apartment.",
   },
   {
-    id: "vpn_log", title: "Lumen VPN Log", type: "digital", importance: "key", icon: "terminal", source: "BCPD Central Precinct",
+    id: "vpn_log", aliases: ["vpn log", "no keystrokes", "idle", "vpn session", "you weren't typing"], title: "Lumen VPN Log", type: "digital", importance: "key", icon: "terminal", source: "BCPD Central Precinct",
     summary: "Sofia's home connection stayed up 20:58–23:31 — but no typing or clicks between 22:12 and 23:26.",
     detail: "Lumen Dynamics IT, session record for user s.bennett:\n• 20:58 — connected from home IP (Carver Street)\n• 22:12 — last keystroke / mouse click\n• 22:12–23:26 — session kept alive by tiny periodic cursor movements, no input\n• 23:26 — keystrokes resume\n• 23:31 — disconnected\nIT note: 'Pattern consistent with an automated mouse-movement device.'",
     timeline: [
@@ -106,20 +106,20 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "taxi", title: "Blackwood Cab Dispatch Record", type: "document", importance: "key", icon: "car", source: "BCPD Central Precinct",
+    id: "taxi", aliases: ["taxi", "cab", "dock street", "22:19", "22:34"], title: "Blackwood Cab Dispatch Record", type: "document", importance: "key", icon: "car", source: "BCPD Central Precinct",
     summary: "A cab booked from Sofia's phone: Carver Street 22:19 → Dock Street (behind the Tower) 22:34.",
     detail: "Sgt. Kane's canvass of cab companies turned up Blackwood Cab booking #44817:\n• Booked from: Sofia Bennett's mobile number\n• Pickup: 19 Carver Street, 22:19\n• Drop-off: Dock Street, rear of Blackwood Tower, 22:34\n• Paid by card ending 0912 (S. Bennett)",
     timeline: [{ time: "22:34", text: "Cab booked by Sofia Bennett drops its passenger behind Blackwood Tower." }],
   },
   {
-    id: "patent", title: "Lighthouse Patent Archive", type: "document", importance: "supporting", icon: "scroll", source: "BCPD Central Precinct",
+    id: "patent", aliases: ["patent"], title: "Lighthouse Patent Archive", type: "document", importance: "supporting", icon: "scroll", source: "BCPD Central Precinct",
     summary: "The draft patent for Lumen's 'Lighthouse' named Thomas Kessler as inventor. The final filing names only Mercer.",
     detail: "Patent office records for Lumen's flagship 'Lighthouse' security algorithm. The 2023 draft lists sole inventor: Thomas Kessler. The final filing, three months later, lists sole inventor: Daniel Mercer. Kessler was dismissed the same month. A 2024 obituary clipping is attached: Thomas Kessler, 30, 'survived by his mother and his sister'.",
   },
 
   // ───────────── Security Office ─────────────
   {
-    id: "door_log", title: "42nd Floor Access Log", type: "digital", importance: "key", icon: "list",  source: "Security Office",
+    id: "door_log", aliases: ["access log", "exec-spare", "exec spare", "22:44", "door log", "the spare card was used"], title: "42nd Floor Access Log", type: "digital", importance: "key", icon: "list",  source: "Security Office",
     summary: "Card EXEC-SPARE opened the service door at 22:38 and the office at 22:44. The door locked at 22:51.",
     detail: "Access server, Blackwood Tower, 14 Nov:\n• 18:31 — Office 42-A — MERCER-01 — entry\n• 22:08 — Office 42-A — opened from inside (exit button)\n• 22:21 — Office 42-A — door closed, locked\n• 22:38 — Service door, Dock Street — EXEC-SPARE — entry\n• 22:44 — Office 42-A — EXEC-SPARE — entry\n• 22:51 — Office 42-A — door closed, locked\n• 23:40 — Office 42-A — MASTER-SEC — entry",
     timeline: [
@@ -132,7 +132,7 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "camera_log", title: "Camera System Log", type: "digital", importance: "key", icon: "cctv", source: "Security Office",
+    id: "camera_log", aliases: ["override", "vs-7731", "maintenance code", "camera log", "remote override"], title: "Camera System Log", type: "digital", importance: "key", icon: "cctv", source: "Security Office",
     summary: "Internal cameras disabled 22:41–22:52 by a remote maintenance override using code VS-7731 from a mobile device.",
     detail: "Vigil Systems surveillance controller:\n• 22:41:07 — MAINTENANCE OVERRIDE — remote session (mobile device, cellular IP) — authorisation code VS-7731 — internal cameras floors 2–42 suspended\n• 22:52:13 — override expired — recording resumed\nNo fault codes. No admin console login. The lobby and exterior cameras run on the older legacy system and were unaffected.",
     timeline: [
@@ -141,12 +141,12 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "incident_report", title: "Adrian Cole's Incident Report", type: "document", importance: "supporting", icon: "clipboard",  source: "Security Office",
+    id: "incident_report", aliases: ["incident report", "your report", "technical fault"], title: "Adrian Cole's Incident Report", type: "document", importance: "supporting", icon: "clipboard",  source: "Security Office",
     summary: "Filed 23:20: 'Camera outage caused by a technical fault. Officer on desk throughout.'",
     detail: "BLACKWOOD TOWER SECURITY — INCIDENT REPORT\nFiled 23:20 by A. Cole, Head of Security.\n'Between approx. 22:41 and 22:52 the internal camera system suffered a technical fault and stopped recording. Cause believed to be a firmware glitch. Duty officer (A. Cole) present at the security desk throughout. No suspicious activity observed.'",
   },
   {
-    id: "lobby_footage", title: "Lobby Camera Footage", type: "digital", importance: "key", icon: "film", source: "Security Office",
+    id: "lobby_footage", aliases: ["lobby footage", "lobby camera", "empty desk", "left your desk"], title: "Lobby Camera Footage", type: "digital", importance: "key", icon: "film", source: "Security Office",
     summary: "Legacy lobby camera: Sofia leaves 20:15, Oliver turned away 20:52, Marcus leaves 21:28, and the security desk sits empty 22:31–23:04.",
     detail: "The lobby camera runs on the old system and recorded all night:\n• 20:15 — Sofia Bennett exits through the lobby.\n• 20:50–20:53 — Oliver Hayes argues with Adrian Cole at the desk and is turned away.\n• 21:28 — Marcus Reed exits through the lobby.\n• 22:31 — Adrian Cole leaves the security desk, pulling on a coat, and exits towards Dock Street.\n• 22:31–23:04 — the desk is empty. Nobody enters or leaves through the lobby.\n• 23:04 — Cole returns, shaking off rain.",
     timeline: [
@@ -158,7 +158,7 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "dock_footage", title: "Service Dock Footage", type: "digital", importance: "key", icon: "film", source: "Security Office",
+    id: "dock_footage", aliases: ["service dock", "dock footage", "hooded figure", "raincoat", "service door", "22:38"], title: "Service Dock Footage", type: "digital", importance: "key", icon: "film", source: "Security Office",
     summary: "A hooded figure in a dark raincoat enters at 22:38 and leaves at 22:57. Height markers put them at about 1.65 m.",
     detail: "The Dock Street service entrance camera (legacy system, unaffected by the override):\n• 22:38 — a figure in a long dark raincoat, hood up, face turned away, swipes a card and enters.\n• 22:57 — the same figure leaves on foot, head down, towards Dock Street.\nThe door frame carries painted height markers for deliveries. Measured against them, the figure stands roughly 1.65 m (±3 cm) in heeled boots.",
     timeline: [
@@ -167,7 +167,7 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "garage_log", title: "Parking Garage Log", type: "digital", importance: "key", icon: "car", source: "Security Office",
+    id: "garage_log", aliases: ["garage", "car park", "parking", "your car", "number plate", "licence plate", "license plate", "22:03"], title: "Parking Garage Log", type: "digital", importance: "key", icon: "car", source: "Security Office",
     summary: "Marcus Reed's car (BLK-4471) re-entered the garage at 22:03 and left at 22:26.",
     detail: "Licence plate recognition, Blackwood Tower garage:\n• 08:12 — BLK-4471 (registered to Marcus Reed) — in\n• 21:31 — BLK-4471 — out\n• 22:03 — BLK-4471 — in\n• 22:26 — BLK-4471 — out",
     timeline: [
@@ -176,30 +176,30 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "keycard_registry", title: "Keycard Registry", type: "document", importance: "key", icon: "id-card", source: "Security Office",
+    id: "keycard_registry", aliases: ["registry", "issued to you", "never reported lost", "spare card", "spare keycard"], title: "Keycard Registry", type: "document", importance: "key", icon: "id-card", source: "Security Office",
     summary: "EXEC-SPARE is the spare executive card issued to Sofia Bennett. No loss was ever reported.",
     detail: "Blackwood Tower card registry, Lumen Dynamics suite:\n• MERCER-01 — Daniel Mercer\n• REED-01 — Marcus Reed\n• EXEC-SPARE — issued 3 Feb 2025 to Sofia Bennett (Executive Assistant) for 'calendar and courier access to 42-A'. Status: ACTIVE. Loss reports filed: none.\n• MASTER-SEC — Security desk (A. Cole)",
   },
   {
-    id: "visitor_log", title: "Lobby Visitor Log", type: "document", importance: "supporting", icon: "book", source: "Security Office",
+    id: "visitor_log", aliases: ["visitor log", "visitor book", "signed in", "sign in", "you signed"], title: "Lobby Visitor Log", type: "document", importance: "supporting", icon: "book", source: "Security Office",
     summary: "'O. Hayes — Blackwood Ledger — to see D. Mercer — DENIED — 20:52', signed in his hand.",
     detail: "The handwritten visitor book at the lobby desk. Entry for 14 Nov: 'Oliver Hayes — Blackwood Ledger — to see D. Mercer re: comment on story.' Signed by Hayes. Beside it, in Adrian Cole's block capitals: 'NO APPT — DENIED — 20:52.'",
   },
   {
-    id: "vigil_binder", title: "Vigil Maintenance Binder", type: "document", importance: "key", icon: "binder", source: "Security Office",
+    id: "vigil_binder", aliases: ["vigil", "maintenance booking", "binder", "stairwell"], title: "Vigil Maintenance Binder", type: "document", importance: "key", icon: "binder", source: "Security Office",
     summary: "Override code VS-7731 was issued for the 17 Nov maintenance to Lumen's scheduling contact: Sofia Bennett.",
     detail: "Vigil Systems service binder, Q4:\n• 'Quarterly maintenance — Lumen suite & internal cameras — 17 Nov. Booked by client scheduling contact: Sofia Bennett (Lumen Dynamics).'\n• 'Remote override code VS-7731 sent to scheduling contact by email 10 Nov. Valid 10–17 Nov. Usable from any device via the Vigil app.'\nCole's pencilled note: 'Never got the code — Vigil sends it straight to the tenant.'\nAlso filed: 'Service stairwell B — cameras floors 40–42 only. Refit pending.'",
   },
 
   // ───────────── The Drowned Anchor ─────────────
   {
-    id: "bar_receipt", title: "Bar Tab: Marcus Reed", type: "document", importance: "supporting", icon: "receipt", source: "The Drowned Anchor",
+    id: "bar_receipt", aliases: ["receipt", "bar tab", "22:43"], title: "Bar Tab: Marcus Reed", type: "document", importance: "supporting", icon: "receipt", source: "The Drowned Anchor",
     summary: "Card payment by Marcus Reed at 22:43, double Scotch. Tab closed at 00:31.",
     detail: "From the Anchor's card terminal: 'M. REED — Glenlivet 18, double — 22:43'. Four more doubles follow. The tab closed at 00:31.",
     timeline: [{ time: "22:43", text: "Marcus Reed pays for a double Scotch at the Drowned Anchor." }],
   },
   {
-    id: "bartender", title: "Bartender's Statement", type: "testimony", importance: "key", icon: "speech", source: "Mae Okafor, bartender",
+    id: "bartender", aliases: ["bartender", "mae", "the anchor", "drowned anchor", "witness at the bar"], title: "Bartender's Statement", type: "testimony", importance: "key", icon: "speech", source: "Mae Okafor, bartender",
     summary: "Cole sat in the back booth with a bookie 22:35–22:58. Reed came in around 22:40 with a bloody knuckle.",
     detail: "Mae Okafor, behind the bar at the Drowned Anchor:\n\"Adrian Cole came in about 22:35. Sat in the back booth with Vinnie Sato — Sato takes bets. They talked money, Cole handed over an envelope, left just before eleven.\n\"Marcus Reed came in round 22:40. Expensive suit, one sleeve hanging loose, scraped knuckles. Sat right there and kept saying 'He was fine when I left. He was fine.' Didn't move till we closed his tab after midnight.\"",
     timeline: [
@@ -209,14 +209,14 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "napkin", title: "Bookie's Napkin", type: "physical", importance: "minor", icon: "napkin", source: "The Drowned Anchor",
+    id: "napkin", aliases: ["napkin", "bookie", "sato", "gambling", "12k", "debt"], title: "Bookie's Napkin", type: "physical", importance: "minor", icon: "napkin", source: "The Drowned Anchor",
     summary: "'A.C. — 12k — paid 6, owes 6 — Fri' scrawled on a bar napkin.",
     detail: "Left in the back booth, under an ashtray: a napkin scrawled in pencil. 'A.C. — 12k — pd 6 — 6 Fri. No more extensions.' Someone is in debt, and it isn't small.",
   },
 
   // ───────────── Mercer penthouse ─────────────
   {
-    id: "laptop", title: "Mercer's Laptop (Message Sync)", type: "digital", importance: "key", icon: "laptop", source: "Mercer Penthouse",
+    id: "laptop", aliases: ["laptop", "his messages", "synced messages", "i know about lantern", "your brother", "coming up"], title: "Mercer's Laptop (Message Sync)", type: "digital", importance: "key", icon: "laptop", source: "Mercer Penthouse",
     summary: "His synced texts: 21:12 to Sofia — 'I know about Lantern. I know who your brother was.' 22:36 reply: 'Don't call anyone. I'm coming up.'",
     detail: "The laptop on his study desk mirrors his phone's messages. The thread with Sofia Bennett:\n\n21:12 — DANIEL: \"I know about Lantern. I know who your brother was. Be at the office tonight or I go to the police at 9am. You'll never work again — and Hayes goes down with you.\"\n\n22:36 — SOFIA: \"Don't call anyone. I'm coming up.\"\n\nNo further messages.",
     timeline: [
@@ -225,18 +225,18 @@ export const evidence: EvidenceDef[] = [
     ],
   },
   {
-    id: "dossier", title: "Private Investigator's Dossier", type: "document", importance: "key", icon: "folder", source: "Mercer Penthouse",
+    id: "dossier", aliases: ["dossier", "investigator", "background check", "private investigator", "kirby"], title: "Private Investigator's Dossier", type: "document", importance: "key", icon: "folder", source: "Mercer Penthouse",
     summary: "A background check Mercer ordered on Sofia Bennett: her half-brother was Thomas Kessler, the engineer he fired.",
     detail: "Kirby & Vance Investigations, delivered 13 Nov:\n'Subject: Sofia Bennett, 29. Half-brother: Thomas Kessler (former Lumen engineer, dismissed 2023, deceased 2024). Subject applied to Lumen four months after Kessler's death under her father's surname. Subject's personal email has repeatedly forwarded internal Lumen documents to an encrypted drop. Recipient consistent with journalist Oliver Hayes's source protocol.'\nMercer has underlined 'Kessler' twice.",
     timeline: [{ time: "—", text: "13 Nov: Mercer receives a PI report on Sofia Bennett's link to Thomas Kessler." }],
   },
   {
-    id: "safe", title: "Opened Study Safe", type: "physical", importance: "supporting", icon: "safe", source: "Mercer Penthouse",
+    id: "safe", aliases: ["safe", "cayman", "offshore"], title: "Opened Study Safe", type: "physical", importance: "supporting", icon: "safe", source: "Mercer Penthouse",
     summary: "The safe behind the painting stands open. A folder labelled 'E.M. — Cayman' is empty.",
     detail: "The wall safe behind the harbour painting is open — opened by code, not forced. Inside, among share certificates, sits an empty manila folder tabbed 'E.M. — CAYMAN — for court'. Whatever was in it is gone.",
   },
   {
-    id: "doorman_log", title: "Harbor Heights Concierge Log", type: "digital", importance: "key", icon: "tablet", source: "Mercer Penthouse",
+    id: "doorman_log", aliases: ["concierge", "doorman", "harbor heights", "penthouse at 22:05", "22:05"], title: "Harbor Heights Concierge Log", type: "digital", importance: "key", icon: "tablet", source: "Mercer Penthouse",
     summary: "'Mrs. E. Mercer — resident key — 22:05 in / 22:20 out.'",
     detail: "The concierge tablet's entry log for the penthouse lift:\n• 22:05 — Mrs. Evelyn Mercer — resident fob (legacy, not deactivated) — up to PH\n• 22:20 — Mrs. Evelyn Mercer — down, exits to street\nThe night concierge noted: 'Mrs M. in evening gown, in a hurry, carrying a folder on the way out.'",
     timeline: [
@@ -247,50 +247,50 @@ export const evidence: EvidenceDef[] = [
 
   // ───────────── Blackwood Ledger newsroom ─────────────
   {
-    id: "expose", title: "Exposé Draft", type: "digital", importance: "key", icon: "newspaper", source: "Blackwood Ledger",
+    id: "expose", aliases: ["exposé", "expose", "your article", "your story draft", "the draft"], title: "Exposé Draft", type: "digital", importance: "key", icon: "newspaper", source: "Blackwood Ledger",
     summary: "'The Dark Behind the Light' — Halvorsen payments and a stolen patent, sourced to an insider codenamed LANTERN.",
     detail: "Draft on Oliver Hayes's screen, slated for the 18 Nov edition:\n'THE DARK BEHIND THE LIGHT — How Lumen's millions vanished into a shell company, and how its founder built an empire on a dead engineer's work.'\nSources: 'LANTERN — Lumen insider with access to the CEO's calendar and correspondence.'\nThe CMS revision history shows Hayes editing the draft at 22:40, 22:47 and 23:02.",
   },
   {
-    id: "threats", title: "Threatening Messages", type: "document", importance: "supporting", icon: "warning", source: "Blackwood Ledger",
+    id: "threats", aliases: ["threats", "threatening messages", "burner", "drown in it"], title: "Threatening Messages", type: "document", importance: "supporting", icon: "warning", source: "Blackwood Ledger",
     summary: "Printouts of anonymous texts: 'Drop the Halvorsen story or you'll drown in it.'",
     detail: "Pinned to Hayes's corkboard, printed from his phone. From an unregistered number, 2–12 Nov:\n'Drop the Halvorsen story.'\n'Some numbers are better left alone.'\n'Drop the Halvorsen story or you'll drown in it.'\nHayes has written: 'Started the day after I called Lumen finance about Halvorsen.'",
   },
   {
-    id: "newsroom_log", title: "Ledger Badge & Editing Log", type: "digital", importance: "supporting", icon: "list", source: "Blackwood Ledger",
+    id: "newsroom_log", aliases: ["badge log", "newsroom log", "night editor", "priya"], title: "Ledger Badge & Editing Log", type: "digital", importance: "supporting", icon: "list", source: "Blackwood Ledger",
     summary: "Hayes badged into the newsroom at 21:34 and didn't leave until 01:12. Night editor confirms.",
     detail: "Ledger building badge log: O. HAYES — in 21:34 — out 01:12. Night editor Priya Shah's note: 'Oliver at his desk all night rewriting the Lumen piece. Ate at his desk. Only left to use the bathroom.' CMS edits at 22:40, 22:47 and 23:02 were made from his desk terminal.",
     timeline: [{ time: "21:34", text: "Oliver Hayes badges into the Ledger newsroom (stays until 01:12)." }],
   },
   {
-    id: "reporter_notebook", title: "Reporter's Notebook", type: "document", importance: "minor", icon: "notebook", source: "Blackwood Ledger",
+    id: "reporter_notebook", aliases: ["your notebook", "reporter's notebook", "t.k."], title: "Reporter's Notebook", type: "document", importance: "minor", icon: "notebook", source: "Blackwood Ledger",
     summary: "Hayes's notes: 'L. says Lighthouse was stolen from an engineer — T.K.? L. knows too much about him. Personal?'",
     detail: "A battered spiral notebook. Among shorthand notes:\n'L. — calendar, emails, board minutes. Never meets in person.'\n'L. says Lighthouse was T.K.'s — Mercer took it. Check patent drafts.'\n'L. knows T.K. too well. Personal?'",
   },
 
   // ───────────── Carver Street flat (search warrant) ─────────────
   {
-    id: "spare_card", title: "Spare Executive Keycard", type: "physical", importance: "key", icon: "id-card", source: "Carver Street Flat",
+    id: "spare_card", aliases: ["found the card", "in your coat", "your raincoat"], title: "Spare Executive Keycard", type: "physical", importance: "key", icon: "id-card", source: "Carver Street Flat",
     summary: "Card EXEC-SPARE, found in the pocket of a still-damp dark raincoat.",
     detail: "In the pocket of a long navy raincoat hanging by the door — the hem still damp — a white keycard printed LUMEN DYNAMICS · 42-A · EXEC-SPARE. The card she said she lost weeks ago.",
   },
   {
-    id: "victim_phone", title: "Daniel Mercer's Phone", type: "physical", importance: "key", icon: "phone", source: "Carver Street Flat",
+    id: "victim_phone", aliases: ["his phone in your", "daniel's phone", "kitchen drawer", "we found his phone"], title: "Daniel Mercer's Phone", type: "physical", importance: "key", icon: "phone", source: "Carver Street Flat",
     summary: "Mercer's phone, powered off, wrapped in a tea towel at the back of a kitchen drawer.",
     detail: "Wrapped in a tea towel behind the cutlery tray: a black phone in a leather case embossed D.M. Powered off. When the lab powers it on, the last messages match the laptop: 'I know about Lantern...' and 'Don't call anyone. I'm coming up.'",
   },
   {
-    id: "boots", title: "Heeled Ankle Boots", type: "physical", importance: "key", icon: "boots", source: "Carver Street Flat",
+    id: "boots", aliases: ["your boots", "ankle boots"], title: "Heeled Ankle Boots", type: "physical", importance: "key", icon: "boots", source: "Carver Street Flat",
     summary: "EU size 37, chevron sole, still gritty with street dirt.",
     detail: "On the mat by the door: black heeled ankle boots, EU 37. The chevron sole pattern matches the forensic photograph of the print in Mercer's office, down to a nick in the left heel.",
   },
   {
-    id: "brother_photo", title: "Photograph: Sofia & Thomas", type: "physical", importance: "supporting", icon: "frame", source: "Carver Street Flat",
+    id: "brother_photo", aliases: ["photograph", "photo of you", "keep the light on"], title: "Photograph: Sofia & Thomas", type: "physical", importance: "supporting", icon: "frame", source: "Carver Street Flat",
     summary: "A younger Sofia with Thomas Kessler. Inscribed: 'For Sofi — keep the light on. T.'",
     detail: "A framed photograph on the bookshelf: Sofia, maybe twenty, laughing beside a lanky young man in a Lumen hoodie. On the back, in marker: 'For Sofi — keep the light on. T.' Beside it, an order-of-service card: 'Thomas Kessler, 1994–2024'.",
   },
   {
-    id: "jiggler", title: "Mouse-Jiggler Device", type: "physical", importance: "supporting", icon: "usb", source: "Carver Street Flat",
+    id: "jiggler", aliases: ["jiggler", "mouse jiggler", "keepawake", "usb device"], title: "Mouse-Jiggler Device", type: "physical", importance: "supporting", icon: "usb", source: "Carver Street Flat",
     summary: "A USB device that nudges the cursor to keep a computer 'active'. Plugged into her work desktop.",
     detail: "Plugged into the back of Sofia's desktop: a thumb-sized USB dongle labelled 'KeepAwake Pro — prevents idle status'. It moves the cursor a single pixel every thirty seconds. The VPN client is configured to auto-reconnect.",
   },
@@ -304,7 +304,7 @@ export const evidence: EvidenceDef[] = [
     summary: "Evelyn admits she slipped out to the penthouse 22:05–22:20 to take the Cayman file from the safe.",
     detail: "\"Daniel called me at half past eight. He'd found the Cayman account and said he'd give it to the divorce judge on Monday. I knew the safe code — it's still our anniversary. I took the file and went straight back to the gala. I never went near that tower.\"",
     timeline: [{ time: "22:05", text: "(Claim) Evelyn: at the penthouse taking the Cayman file, then straight back to the gala." }] },
-  { id: "valet", title: "Valet Stub & Auction Photo", type: "document", importance: "supporting", icon: "ticket", source: "Evelyn Mercer",
+  { id: "valet", aliases: ["valet", "auction photo", "lisbon"], title: "Valet Stub & Auction Photo", type: "document", importance: "supporting", icon: "ticket", source: "Evelyn Mercer",
     summary: "Grand Meridian valet: car out 21:47, back 22:41. Gala photo of Evelyn bidding at 22:55.",
     detail: "Evelyn hands over a Grand Meridian valet stub stamped OUT 21:47 / RETURNED 22:41, and a gala photographer's image time-stamped 22:55 showing her raising a paddle at the silent auction. The Grand Meridian is a 25-minute drive from Blackwood Tower.",
     timeline: [
@@ -333,7 +333,7 @@ export const evidence: EvidenceDef[] = [
   { id: "T_SOFIA_NOCONTACT", title: "Sofia: 'No contact after 20:15'", type: "testimony", importance: "supporting", icon: "speech", source: "Sofia Bennett",
     summary: "Sofia claims she had no contact with Daniel after leaving the office.",
     detail: "\"After I left at quarter past eight? No. He didn't call, I didn't message. He didn't like to be disturbed in the evenings.\"" },
-  { id: "T_SOFIA_FOUND", title: "Sofia: 'He was already dead'", type: "testimony", importance: "key", icon: "speech", source: "Sofia Bennett",
+  { id: "T_SOFIA_FOUND", aliases: ["already dead", "you found him"], title: "Sofia: 'He was already dead'", type: "testimony", importance: "key", icon: "speech", source: "Sofia Bennett",
     summary: "Sofia now admits going to the office — but claims Daniel was already dead when she arrived, and she only took his phone.",
     detail: "\"All right. I went. He'd texted me. When I got upstairs he was on the floor. Already gone. I panicked — the messages on his phone would have destroyed me, so I took it and I ran. That's all. I didn't kill him.\"",
     timeline: [{ time: "22:44", text: "(Claim) Sofia: found Mercer already dead and took his phone." }] },
@@ -353,7 +353,7 @@ export const evidence: EvidenceDef[] = [
   { id: "T_OLIVER_LOBBY", title: "Oliver: Lobby admission", type: "testimony", importance: "minor", icon: "speech", source: "Oliver Hayes",
     summary: "Oliver admits he went to the lobby at 20:50 to doorstep Mercer for comment and was turned away.",
     detail: "\"Fine — I went to the lobby. I wanted his comment on the record before we ran it. Cole threw me out at ten to nine and I went back to the office. I lied because the man got murdered three hours later and I'm the guy writing a hit piece on him.\"" },
-  { id: "T_OLIVER_LANTERN", title: "Oliver: Lantern's last message", type: "testimony", importance: "key", icon: "speech", source: "Oliver Hayes",
+  { id: "T_OLIVER_LANTERN", aliases: ["he knows", "i'll fix it", "lantern messaged", "lantern's message"], title: "Oliver: Lantern's last message", type: "testimony", importance: "key", icon: "speech", source: "Oliver Hayes",
     summary: "Oliver reveals that LANTERN messaged him at 21:20: 'He knows. I'll fix it. Don't contact me.' Lantern is Sofia Bennett.",
     detail: "Hayes shows you his encrypted messaging app. From the contact LANTERN, 21:20, 14 Nov:\n'He knows. I'll fix it. Don't contact me.'\n\"Lantern is Sofia Bennett. Her brother was Thomas Kessler. I thought 'fix it' meant she'd lawyer up. God help me, I didn't ask.\"",
     timeline: [{ time: "21:20", text: "LANTERN (Sofia) to Hayes: 'He knows. I'll fix it. Don't contact me.'" }] },

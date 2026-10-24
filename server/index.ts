@@ -1,5 +1,5 @@
 /**
- * DETECTIVE AI game server: JSON API + static hosting of the built client.
+ * Blackwood Files game server: JSON API + static hosting of the built client.
  * Run with Node 22.18+ (native TypeScript type stripping).
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -214,5 +214,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`DETECTIVE AI server on http://localhost:${PORT}  (AI dialogue: ${aiInfo.enabled ? aiInfo.model : "off — authored dialogue"})`);
+  console.log(`Blackwood Files server on http://localhost:${PORT}  (AI dialogue: ${aiInfo.enabled ? aiInfo.model : "off — authored dialogue"})`);
 });

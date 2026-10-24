@@ -37,9 +37,9 @@ export function Welcome() {
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2 }}>
-          <div className="label-caps mb-4 !tracking-[0.5em] !text-amber-400/80">Blackwood City · 2026</div>
+          <div className="label-caps mb-4 !tracking-[0.5em] !text-amber-400/80">A detective noir</div>
           <h1 className="font-display text-6xl font-extrabold tracking-[0.12em] text-paper-100 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] sm:text-8xl">
-            DETECTIVE <span className="text-amber-400">AI</span>
+            BLACKWOOD <span className="text-amber-400">FILES</span>
           </h1>
           <p className="mt-5 font-display text-xl italic text-smoke-200 sm:text-2xl">Every Secret Leaves a Trace.</p>
         </motion.div>

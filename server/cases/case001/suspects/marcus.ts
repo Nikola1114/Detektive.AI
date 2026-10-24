@@ -24,6 +24,8 @@ export const marcus: SuspectDef = {
   motive: "Mercer had discovered irregularities in the accounts that Marcus controls.",
   alibi: "Claims he left Blackwood Tower at 21:30 and went home.",
   portrait: { skin: "#c9a284", hair: "slick", hairColor: "#2c2018", outfit: "suit", outfitColor: "#1b2433", beard: "stubble", age: "mid", build: "broad" },
+  voice: { gender: "male", pitch: 1.0, rate: 1.08, seed: 2 },
+  about: "Marcus Reed. Co-founder and chief operating officer of Lumen. I'm the guy who keeps the lights on while the genius takes the bows. Took.",
   initial: { stress: 25, trust: 35, mood: "cooperative" },
   greeting: "Detective. Anything you need — anything. Daniel was my best friend. Let's find the bastard who did this.",
   topics: [

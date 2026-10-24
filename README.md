@@ -1,6 +1,8 @@
-# DETECTIVE AI
+# Blackwood Files
 
 *Every Secret Leaves a Trace.*
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Nikola1114/Detektive.AI)
 
 A noir crime-investigation game for the browser. Examine crime scenes, collect evidence, interrogate suspects who lie for their own reasons, pin it all to an evidence board, and prove who did it.
 
@@ -24,10 +26,29 @@ npm start            # serves the game and API on http://localhost:8787
 
 Optional AI dialogue: copy `.env.example` to `.env` and set `ANTHROPIC_API_KEY`. Without a key the game uses its authored dialogue engine and stays fully playable. The Settings screen shows which engine is active.
 
+## Talking to suspects
+
+The interrogation room is a monochrome scene: the suspect sits across the table under a lamp, and their posture changes with their mood. Replies appear in speech bubbles with a line of body language (*"They avert their gaze."*), a heart-rate monitor shows stress, and other suspects wait on the right.
+
+- **Ask questions any way you like.** Pick a suggested question, or type or speak your own. The game tolerates typos and different wordings, and it understands follow-ups ("why?", "are you sure?"), greetings and "who are you?". If you **mention evidence you've found** ("why was your car in the garage at 22:03?"), that counts as confronting the suspect with it. When it doesn't understand, it suggests what you could ask.
+- **Voices.** Suspects speak their lines aloud, each with their own voice, using the browser's built-in speech. It's free and needs no key; Microsoft Edge has the most natural voices. Click the microphone to ask out loud (Edge or Chrome). You can change voice volume and speed, or turn voices off, in Settings.
+- **AI answers (optional).** With an `ANTHROPIC_API_KEY`, suspects answer typed or spoken questions in their own words, within the safety rules described below.
+
+## Share it with friends
+
+**Easiest: put it online (free).** Click **Deploy to Render** above, sign in with GitHub, and click **Apply**. A few minutes later you get a web address like `https://blackwood-files.onrender.com` that anyone can open on a computer or phone. Each visitor gets their own private save.
+
+Things to know about Render's free plan:
+- The site goes to sleep after about 15 minutes with no visitors, and the next visit takes up to a minute to wake it.
+- **Saves are wiped whenever the server restarts or sleeps.** To keep saves, choose a paid plan and add a disk mounted at `/opt/render/project/src/data`.
+- AI answers are off unless you add your own `ANTHROPIC_API_KEY` in Render's Environment settings. Usage is billed to you; `DETECTIVE_AI_DAILY_LIMIT` caps replies per player per day.
+
+**Same Wi-Fi only:** run `npm run build` and then `npm start` on your computer. Friends on the same network open `http://<your-computer's-IP>:8787`. The microphone only works on `localhost` or over HTTPS, so for voice input the Render option is better.
+
 ## Tests
 
 ```bash
-npm test             # 36 unit/integration tests (no network needed)
+npm test             # 41 unit/integration tests (no network needed)
 npm run test:e2e     # browser playthroughs (server must be running on :8787)
 ```
 

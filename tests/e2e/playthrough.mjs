@@ -63,7 +63,7 @@ async function present(suspectId, titles) {
   await page.goto(`${BASE}/#/interrogate/${suspectId}`);
   await page.waitForSelector('section[aria-label^="Interview with"]');
   for (const title of titles) {
-    await page.getByRole("button", { name: /Present evidence/ }).click();
+    await page.getByRole("button", { name: /Show them a piece of evidence/ }).click();
     await page.locator('[role="dialog"] button', { hasText: title }).first().click();
     await page.waitForTimeout(600);
   }
@@ -139,9 +139,12 @@ try {
   await snap("interrogation-marcus-admission");
 
   step("Free-text question");
-  await page.getByLabel("Ask a question").fill("Who was on Daniel's calendar for last night?");
+  await page.goto(`${BASE}/#/interrogate/sofia`);
+  await page.getByLabel("Ask your own question").fill("Who was on Daniel's calender for last night?");
   await page.getByRole("button", { name: "Ask" }).click();
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(900);
+  assert((await caseState()).suspects.find((s) => s.id === "sofia").history.at(-1).text.includes("M.R."), "typo'd free-text question understood");
+  await snap("interrogation-free-text");
 
   step("Visit the rest of the city");
   await page.goto(`${BASE}/#/map`);

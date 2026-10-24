@@ -5,8 +5,8 @@
 import type {
   AccuseResult, BoardState, ConnectResult, GameEvents, HotspotView, InspectResult, InterrogateResult, Mood, NoteTag, Verdict,
 } from "../../shared/api.ts";
-import type { CaseDef, EvidenceDef, ResponseNode, SuspectDef } from "../cases/types.ts";
-import { availableTopics, denial, detectIntent, pickNode, type Intent } from "../dialogue/authored.ts";
+import type { CaseDef, EvidenceDef, ResponseNode, SuspectDef, TopicDef } from "../cases/types.ts";
+import { availableTopics, denial, detectIntent, findEvidenceMention, goodbye, pickNode, pressed, type Intent } from "../dialogue/authored.ts";
 import { voiceTurn } from "../dialogue/ai.ts";
 import { XP, checkAchievements, grantXp, unlockAchievement } from "./progression.ts";
 import { check, clamp, has, uid, type CaseProgress, type PlayerSave, type SuspectProgress } from "./state.ts";
@@ -289,13 +289,14 @@ export async function interrogate(ctx: Ctx, suspectId: string, input: TalkInput)
   let reply = "";
   let mood: Mood = sp.mood;
   let evidenceId: string | undefined;
+  let cited: string | undefined;
   let freeText = false;
+  let hint: string | undefined;
 
-  if (input.evidenceId) {
-    const e = ev(ctx.def, input.evidenceId);
-    if (!e || !has(ctx.p, e.id)) throw new GameError("You haven't found that evidence.");
+  /** The suspect's reaction to a piece of evidence, whether shown or mentioned. */
+  const react = (e: EvidenceDef) => {
     evidenceId = e.id;
-    playerText = `Presents evidence: ${e.title}`;
+    sp.lastTopic = `ev:${e.id}`;
     const pick = pickNode(sdef.reactions[e.id] ?? [], ctx.p, sp);
     if (pick) {
       node = pick.node;
@@ -308,6 +309,24 @@ export async function interrogate(ctx: Ctx, suspectId: string, input: TalkInput)
       if (repeated) { sp.trust = clamp(sp.trust - 2); mood = "irritated"; reply = "You've already shown me that. It still means nothing to me."; }
     }
     if (!sp.presented.includes(e.id)) sp.presented.push(e.id);
+  };
+
+  const askTopic = (t: TopicDef) => {
+    if (!sp.asked.includes(t.id)) sp.asked.push(t.id);
+    sp.lastTopic = `t:${t.id}`;
+    const pick = pickNode(t.nodes, ctx.p, sp);
+    if (!pick) { reply = sdef.unknown[0]; return; }
+    node = pick.node;
+    const fresh = applyNode(ctx, sdef, sp, pick.node, `t:${t.id}:${pick.index}`);
+    reply = fresh || !t.repeat ? pick.node.text : t.repeat;
+    mood = pick.node.mood;
+  };
+
+  if (input.evidenceId) {
+    const e = ev(ctx.def, input.evidenceId);
+    if (!e || !has(ctx.p, e.id)) throw new GameError("You haven't found that evidence.");
+    playerText = `Presents evidence: ${e.title}`;
+    react(e);
   } else {
     let intent: Intent;
     if (input.topicId) {
@@ -322,18 +341,39 @@ export async function interrogate(ctx: Ctx, suspectId: string, input: TalkInput)
       intent = detectIntent(sdef, ctx.p, playerText);
     }
 
-    if (intent.kind === "topic") {
-      const t = intent.topic;
-      if (!sp.asked.includes(t.id)) sp.asked.push(t.id);
-      const pick = pickNode(t.nodes, ctx.p, sp);
-      if (pick) {
-        node = pick.node;
-        const fresh = applyNode(ctx, sdef, sp, pick.node, `t:${t.id}:${pick.index}`);
-        reply = fresh || !t.repeat ? pick.node.text : t.repeat;
-        mood = pick.node.mood;
+    // Evidence mentioned in the player's own words counts as confronting them with it.
+    const mentioned = freeText && !["deflect", "accuse", "greet", "bye", "followup"].includes(intent.kind)
+      ? findEvidenceMention(playerText, Object.keys(ctx.p.discovered).filter((id) => sdef.reactions[id]).map((id) => ev(ctx.def, id)!))
+      : null;
+
+    if (mentioned) {
+      cited = mentioned;
+      react(ev(ctx.def, mentioned)!);
+    } else if (intent.kind === "topic") {
+      askTopic(intent.topic);
+    } else if (intent.kind === "followup") {
+      const last = sp.lastTopic;
+      if (last?.startsWith("ev:")) {
+        const e = ev(ctx.def, last.slice(3))!;
+        const pick = pickNode(sdef.reactions[e.id] ?? [], ctx.p, sp);
+        if (pick && !sp.usedNodes.includes(`ev:${e.id}:${pick.index}`)) react(e);
+        else { reply = pressed(sp.history.length); mood = sp.mood; }
+      } else if (last?.startsWith("t:")) {
+        const t = availableTopics(sdef, ctx.p).find((x) => `t:${x.id}` === last);
+        const pick = t && pickNode(t.nodes, ctx.p, sp);
+        if (t && pick && !sp.usedNodes.includes(`t:${t.id}:${pick.index}`)) askTopic(t);
+        else { reply = pressed(sp.history.length); mood = sp.mood; }
       } else {
-        reply = sdef.unknown[0];
+        reply = sdef.unknown[sp.history.length % sdef.unknown.length];
       }
+      // Pressing a point raises the temperature once per subject, not every time.
+      if (last && !node && !sp.usedNodes.includes(`fu:${last}`)) { sp.usedNodes.push(`fu:${last}`); sp.stress = clamp(sp.stress + 3); }
+    } else if (intent.kind === "greet") {
+      reply = sp.history.length === 0 ? sdef.greeting : "Detective.";
+    } else if (intent.kind === "about") {
+      reply = sdef.about ?? `You've read my file, detective. ${sdef.profession}. That's who I am.`;
+    } else if (intent.kind === "bye") {
+      reply = goodbye(sp.history.length);
     } else if (intent.kind === "deflect") {
       reply = sdef.deflection;
       mood = "irritated";
@@ -344,6 +384,8 @@ export async function interrogate(ctx: Ctx, suspectId: string, input: TalkInput)
       mood = "defensive";
     } else {
       reply = sdef.unknown[sp.history.length % sdef.unknown.length];
+      const options = availableTopics(sdef, ctx.p).sort((a, b) => Number(sp.asked.includes(a.id)) - Number(sp.asked.includes(b.id))).slice(0, 2);
+      if (options.length) hint = `Try asking about something they can answer — for example: "${options.map((o) => o.label).join('" or "')}" You can also name evidence you've found.`;
     }
 
     // The player's approach matters, but only a little, and empathy can't be farmed.
@@ -357,19 +399,20 @@ export async function interrogate(ctx: Ctx, suspectId: string, input: TalkInput)
   let engine: "authored" | "ai" = "authored";
   if (freeText) {
     const voiced = await voiceTurn({
-      suspect: sdef, progress: sp, playerText,
+      suspect: sdef, progress: sp, playerText, budgetKey: ctx.save.id,
       beat: node ? { text: reply, mood } : null,
       sayable: sayableLines(ctx, sdef, sp),
     });
-    if (voiced) { reply = voiced.reply; mood = voiced.mood; engine = "ai"; }
+    if (voiced) { reply = voiced.reply; mood = voiced.mood; engine = "ai"; hint = undefined; }
   }
 
   sp.mood = mood;
   const now = Date.now();
   sp.history.push({ role: "player", text: playerText, ts: now, evidenceId });
   sp.history.push({ role: "suspect", text: reply, mood, ts: now + 1 });
+  if (hint) sp.history.push({ role: "system", text: hint, ts: now + 2 });
   if (sp.history.length > 400) sp.history.splice(0, sp.history.length - 400);
-  return { reply, mood, stress: sp.stress, trust: sp.trust, engine };
+  return { reply, mood, stress: sp.stress, trust: sp.trust, engine, citedEvidence: cited };
 }
 
 // ───────────────────────── accusation ─────────────────────────

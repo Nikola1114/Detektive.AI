@@ -1,0 +1,16 @@
+# One-click hosting on Render (https://render.com). See README → "Share it with friends".
+services:
+  - type: web
+    name: blackwood-files
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/info
+    envVars:
+      # Optional: set to enable AI-voiced suspects (charges go to your Anthropic account).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Caps AI replies per player per day to protect your bill.
+      - key: DETECTIVE_AI_DAILY_LIMIT
+        value: "200"

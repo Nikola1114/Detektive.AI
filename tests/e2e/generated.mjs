@@ -33,7 +33,7 @@ try {
   }
   await page.screenshot({ path: `${OUT}/g3-scene.png` });
   await page.goto(`${BASE}/#/interrogate`);
-  await page.locator('aside[aria-label="Suspects"] button').first().click();
+  await page.locator("main button, .grid button").first().click();
   await page.getByRole("button", { name: "Where were you last night?", exact: true }).click();
   await page.waitForTimeout(700);
   await page.screenshot({ path: `${OUT}/g4-interrogation.png` });

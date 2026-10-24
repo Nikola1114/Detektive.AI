@@ -1,9 +1,10 @@
-import { Download, RotateCcw, Trash2, Volume2 } from "lucide-react";
+import { Download, Mic, RotateCcw, Trash2, Volume2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { api } from "../api";
 import { GameLayout } from "../components/GameLayout";
 import { Button, Modal, SectionTitle } from "../components/ui";
 import { useGame } from "../game/GameContext";
+import { micSupported, speak, voiceSupported } from "../voice";
 
 export function Settings() {
   const { settings, setSettings, info, caseId, startCase, go, resetAll, notify, state } = useGame();
@@ -14,7 +15,7 @@ export function Settings() {
       const data = await api("GET", "/api/export");
       const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
       const a = document.createElement("a");
-      a.href = url; a.download = "detective-ai-save.json"; a.click();
+      a.href = url; a.download = "blackwood-files-save.json"; a.click();
       URL.revokeObjectURL(url);
     } catch (e) { notify("error", (e as Error).message); }
   };
@@ -29,6 +30,23 @@ export function Settings() {
           <Slider label="Ambience" value={settings.ambient} disabled={!settings.sound} onChange={(v) => setSettings({ ambient: v })} />
           <Slider label="Music" value={settings.music} disabled={!settings.sound} onChange={(v) => setSettings({ music: v })} />
           <Slider label="Sound effects" value={settings.sfx} disabled={!settings.sound} onChange={(v) => setSettings({ sfx: v })} />
+        </Section>
+
+        <Section title="Voices">
+          {voiceSupported ? (
+            <>
+              <Toggle label="Suspects speak their lines" hint="Uses your browser's built-in voices. Microsoft Edge has the most natural-sounding ones." checked={settings.voices} onChange={(v) => setSettings({ voices: v })} icon={<Mic size={16} />} />
+              <Slider label="Voice volume" value={settings.voiceVolume} disabled={!settings.voices} onChange={(v) => setSettings({ voiceVolume: v })} />
+              <div className={`flex items-center justify-between gap-4 py-3 ${settings.voices ? "" : "opacity-40"}`}>
+                <label htmlFor="vrate" className="text-sm text-paper-100">Speaking speed</label>
+                <input id="vrate" type="range" min={0.7} max={1.4} step={0.05} value={settings.voiceRate} disabled={!settings.voices} onChange={(e) => setSettings({ voiceRate: Number(e.target.value) })} className="w-48" />
+              </div>
+              <Button size="sm" variant="ghost" disabled={!settings.voices} onClick={() => speak("Detective. I've told you everything I know.", { gender: "male", pitch: 0.9, rate: 1, seed: 0 }, { volume: settings.voiceVolume, rate: settings.voiceRate })}>Test voice</Button>
+            </>
+          ) : <p className="py-2 text-sm text-smoke-400">Your browser doesn't support spoken voices. Try Microsoft Edge or Google Chrome.</p>}
+          {micSupported ? (
+            <Toggle label="Send spoken questions automatically" hint="When you finish talking into the microphone, your question is asked straight away." checked={settings.micAutoSend} onChange={(v) => setSettings({ micAutoSend: v })} />
+          ) : <p className="py-2 text-sm text-smoke-400">Speaking to suspects needs Microsoft Edge or Google Chrome.</p>}
         </Section>
 
         <Section title="Accessibility">

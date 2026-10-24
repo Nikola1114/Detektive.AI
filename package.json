@@ -1,9 +1,9 @@
 {
-  "name": "detective-ai",
+  "name": "blackwood-files",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "DETECTIVE AI — an interactive noir crime investigation game.",
+  "description": "Blackwood Files — a noir detective game: investigate, interrogate, deduce.",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:server": "node scripts/dev.mjs --server-only",

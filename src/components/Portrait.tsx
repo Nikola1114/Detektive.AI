@@ -1,7 +1,7 @@
 /** Procedurally drawn noir portraits — desaturated, lit from one side. */
 import type { Mood, PortraitSpec } from "../../shared/api";
 
-export function Portrait({ spec, mood = "calm", size = 120, className = "", name }: { spec: PortraitSpec; mood?: Mood; size?: number; className?: string; name?: string }) {
+export function Portrait({ spec, mood = "calm", size = 120, className = "", name, bare = false }: { spec: PortraitSpec; mood?: Mood; size?: number; className?: string; name?: string; bare?: boolean }) {
   const id = `p${Math.abs(hash(JSON.stringify(spec)))}`;
   const browTilt = mood === "irritated" || mood === "defensive" ? 4 : mood === "nervous" || mood === "shaken" ? -4 : 0;
   const mouth = mood === "cooperative" || mood === "calm" ? "M88 168 Q100 173 112 168" : mood === "shaken" || mood === "nervous" ? "M89 171 Q100 166 111 171" : "M89 169 L111 169";
@@ -26,7 +26,7 @@ export function Portrait({ spec, mood = "calm", size = 120, className = "", name
           <feColorMatrix type="saturate" values="0.25" />
         </filter>
       </defs>
-      <rect width="200" height="240" fill={`url(#${id}-bg)`} />
+      {!bare && <rect width="200" height="240" fill={`url(#${id}-bg)`} />}
       <g filter={`url(#${id}-noir)`}>
         {/* shoulders / outfit */}
         <path d={broad ? "M10 240 Q18 190 62 182 L138 182 Q182 190 190 240 Z" : "M24 240 Q30 196 70 186 L130 186 Q170 196 176 240 Z"} fill={spec.outfitColor} />
@@ -63,9 +63,9 @@ export function Portrait({ spec, mood = "calm", size = 120, className = "", name
         {/* hair */}
         <Hair spec={spec} />
         {/* side light & shadow */}
-        <rect width="200" height="240" fill={`url(#${id}-shade)`} />
+        {!bare && <rect width="200" height="240" fill={`url(#${id}-shade)`} />}
       </g>
-      <rect width="200" height="240" fill={`url(#${id}-light)`} />
+      {!bare && <rect width="200" height="240" fill={`url(#${id}-light)`} />}
     </svg>
   );
 }

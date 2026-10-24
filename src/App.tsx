@@ -32,7 +32,7 @@ export function App() {
   }, [route.name]);
 
   if (!ready) {
-    return <div className="flex min-h-screen items-center justify-center"><div className="font-display text-2xl tracking-[0.3em] text-smoke-400 animate-pulse">DETECTIVE AI</div></div>;
+    return <div className="flex min-h-screen items-center justify-center"><div className="font-display text-2xl tracking-[0.3em] text-smoke-400 animate-pulse">BLACKWOOD FILES</div></div>;
   }
   if (fatal) {
     return (

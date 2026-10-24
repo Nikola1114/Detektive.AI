@@ -4,7 +4,7 @@
  * they must never be serialised to the client wholesale; the engine projects
  * a sanitised view (see server/engine/view.ts).
  */
-import type { EvidenceType, Mood, PortraitSpec, ResolutionScene, SceneKind } from "../../shared/api.ts";
+import type { EvidenceType, Mood, PortraitSpec, ResolutionScene, SceneKind, VoiceProfile } from "../../shared/api.ts";
 
 /** A condition over investigation progress. Every listed clause must hold. */
 export interface Cond {
@@ -65,6 +65,8 @@ export interface EvidenceDef {
   /** Where it was found, for display. Testimony uses the speaker. */
   source: string;
   timeline?: TimelineSeed[];
+  /** Words or phrases a player might use for this item in a typed question ("garage", "car park"). */
+  aliases?: string[];
 }
 
 export interface ResponseNode {
@@ -102,6 +104,9 @@ export interface SuspectDef {
   motive: string;
   alibi: string;
   portrait: PortraitSpec;
+  voice?: VoiceProfile;
+  /** First-person answer to "tell me about yourself". */
+  about?: string;
   initial: { stress: number; trust: number; mood: Mood };
   greeting: string;
   topics: TopicDef[];

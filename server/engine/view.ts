@@ -75,6 +75,7 @@ export function buildCaseState(def: CaseDef, p: CaseProgress): CaseState {
       return {
         id: s.id, name: s.name, age: s.age, height: s.height, profession: s.profession, relation: s.relation,
         personality: s.personality, bio: s.bio, motive: s.motive, alibi: s.alibi, portrait: s.portrait, greeting: s.greeting,
+        voice: s.voice ?? { gender: "male", pitch: 1, rate: 1, seed: s.id.length },
         mood: sp.mood, stress: sp.stress, trust: sp.trust, interviewed: sp.interviewed, history: sp.history,
         suggestions: availableTopics(s, p).map((t) => ({ id: t.id, label: t.label, asked: sp.asked.includes(t.id) })),
       };

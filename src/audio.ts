@@ -18,7 +18,14 @@ class AudioEngine {
   private musicTimer: number | null = null;
   private tickTimer: number | null = null;
   enabled = false;
+  ducked = false;
   vols = { ambient: 0.6, music: 0.4, sfx: 0.7 };
+
+  /** Lowers ambience and music while a character is speaking. */
+  duck(on: boolean) {
+    this.ducked = on;
+    this.applyVolumes();
+  }
 
   private noiseBuffer(ctx: AudioContext, brown = false) {
     const len = ctx.sampleRate * 3;
@@ -77,8 +84,9 @@ class AudioEngine {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
     this.master.gain.setTargetAtTime(this.enabled ? 1 : 0, t, 0.3);
-    this.ambientBus.gain.setTargetAtTime(this.vols.ambient * 0.5, t, 0.3);
-    this.musicBus.gain.setTargetAtTime(this.vols.music * 0.35, t, 0.3);
+    const duck = this.ducked ? 0.35 : 1;
+    this.ambientBus.gain.setTargetAtTime(this.vols.ambient * 0.5 * duck, t, 0.3);
+    this.musicBus.gain.setTargetAtTime(this.vols.music * 0.35 * duck, t, 0.3);
     this.sfxBus.gain.setTargetAtTime(this.vols.sfx * 0.6, t, 0.05);
   }
 

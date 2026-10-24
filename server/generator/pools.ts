@@ -225,7 +225,8 @@ export const SETTINGS: SettingPool[] = [
   },
 ];
 
-export const FIRST = ["Ada", "Ben", "Clara", "Daniel", "Elena", "Felix", "Grace", "Hugo", "Iris", "Jonah", "Kara", "Leo", "Maya", "Noah", "Olive", "Pavel", "Rosa", "Silas", "Tess", "Victor", "Wren", "Yusuf", "Zelda", "Amos", "Bianca", "Conrad", "Delia", "Emil", "Freya", "Gideon", "Hazel", "Ivan", "June", "Kit", "Lena", "Milo", "Nell", "Oscar", "Petra", "Quinn"];
+export const FEMALE_FIRST = ["Ada", "Clara", "Elena", "Grace", "Iris", "Kara", "Maya", "Olive", "Rosa", "Tess", "Wren", "Zelda", "Bianca", "Delia", "Freya", "Hazel", "June", "Lena", "Nell", "Petra"];
+export const MALE_FIRST = ["Ben", "Daniel", "Felix", "Hugo", "Jonah", "Leo", "Noah", "Pavel", "Silas", "Victor", "Yusuf", "Amos", "Conrad", "Emil", "Gideon", "Ivan", "Kit", "Milo", "Oscar", "Quinn"];
 export const LAST = ["Ashdown", "Blake", "Carrow", "Dunmore", "Ellery", "Finch", "Garrow", "Hale", "Ingram", "Jessop", "Kerr", "Lowell", "Marsh", "Nash", "Orme", "Pryce", "Quill", "Rook", "Sable", "Thorne", "Underwood", "Vance", "Whitlock", "Yarrow", "Zane", "Abbott", "Brandt", "Crane", "Devereux", "Easton"];
 
 export const PERSONALITIES = [

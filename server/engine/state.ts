@@ -12,6 +12,8 @@ export interface SuspectProgress {
   presented: string[];
   history: ChatMessage[];
   interviewed: boolean;
+  /** "t:<topic>" or "ev:<evidence>" of the last exchange, for follow-up questions like "why?". */
+  lastTopic?: string;
 }
 
 export interface AccusationEntry {

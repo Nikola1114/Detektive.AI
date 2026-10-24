@@ -50,9 +50,13 @@ export interface SpeakOptions { volume: number; rate: number; engine?: "browser"
 export function speak(text: string, profile: VoiceProfile, opts: SpeakOptions) {
   stopSpeaking();
   if (opts.engine === "neural") {
-    if (neural.status === "ready") { speakNeural(text, profile, opts); return; }
+    if (neural.status === "ready") { void speakNeural(text, profile, opts); return; }
     if (neural.status === "off") loadNeuralVoices(); // fall back to built-in voices while it downloads
   }
+  speakBrowser(text, profile, opts);
+}
+
+function speakBrowser(text: string, profile: VoiceProfile, opts: SpeakOptions) {
   if (!synth) return;
   // Read the words, not the punctuation flourishes.
   const clean = text.replace(/["“”]/g, "").replace(/—/g, ", ").replace(/\.\.\./g, "… ");
@@ -105,19 +109,22 @@ export function loadNeuralVoices() {
     else if (m.type === "ready") { neural.status = "ready"; neural.progress = 1; emit(); }
     else if (m.type === "audio") { pending.get(m.id)?.({ samples: m.samples, rate: m.rate }); pending.delete(m.id); }
     else if (m.type === "error") {
-      if (m.id !== undefined) { pending.get(m.id)?.(null); pending.delete(m.id); }
+      console.warn("[voice] realistic voice error:", m.message);
+      if (m.id !== undefined) { pending.get(m.id)?.(null); pending.delete(m.id); neural.error = m.message; emit(); }
       if (neural.status !== "ready") { neural.status = "error"; neural.error = m.message; emit(); worker?.terminate(); worker = null; }
     }
   };
-  worker.onerror = () => { neural.status = "error"; neural.error = "The voice model could not start in this browser."; emit(); };
+  worker.onerror = (e) => { console.warn("[voice] worker failed:", e.message); neural.status = "error"; neural.error = e.message || "The voice model could not start in this browser."; emit(); };
   worker.postMessage({ type: "load" });
 }
 
+/** Asks the worker for one sentence of audio; resolves null on failure or after a timeout. */
 function generate(text: string, voice: string, speed: number): Promise<{ samples: Float32Array; rate: number } | null> {
   return new Promise((resolve) => {
     if (!worker) return resolve(null);
     const id = nextId++;
-    pending.set(id, resolve);
+    const timer = window.setTimeout(() => { pending.delete(id); console.warn("[voice] realistic voice timed out"); resolve(null); }, 30000);
+    pending.set(id, (r) => { window.clearTimeout(timer); resolve(r); });
     worker.postMessage({ type: "speak", id, text, voice, speed });
   });
 }
@@ -142,8 +149,12 @@ async function speakNeural(text: string, profile: VoiceProfile, opts: SpeakOptio
   for (let i = 0; i < sentences.length; i++) {
     const clip = await upcoming;
     if (my !== session) return;
+    if (!clip) {
+      // Never leave the player in silence: read the rest with the built-in voice.
+      speakBrowser(sentences.slice(i).join(" "), profile, { ...opts, onStart: started ? undefined : opts.onStart });
+      return;
+    }
     if (i + 1 < sentences.length) upcoming = generate(sentences[i + 1], voice, speed);
-    if (!clip) continue;
     if (!started) { started = true; audio.duck(true); opts.onStart?.(); }
     await play(clip, opts.volume, my);
     if (my !== session) return;

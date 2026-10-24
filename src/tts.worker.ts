@@ -3,6 +3,7 @@
  * game stays responsive while speech is generated. The model (~90 MB) is
  * downloaded once from Hugging Face and then cached by the browser.
  */
+// Resolved to the library's self-contained browser build (see vite.config.ts).
 import { KokoroTTS } from "kokoro-js";
 
 type Msg = { type: "load" } | { type: "speak"; id: number; text: string; voice: string; speed: number };
@@ -35,7 +36,8 @@ self.onmessage = async (e: MessageEvent<Msg>) => {
     } else if (msg.type === "speak") {
       const model = await load();
       const audio = await model.generate(msg.text, { voice: msg.voice as never, speed: msg.speed });
-      const samples = audio.audio as Float32Array;
+      // Copy into a fresh buffer: the model's output may live in WebAssembly memory, which can't be transferred.
+      const samples = new Float32Array(audio.audio as Float32Array);
       postMessage({ type: "audio", id: msg.id, samples, rate: audio.sampling_rate }, { transfer: [samples.buffer] });
     }
   } catch (err) {

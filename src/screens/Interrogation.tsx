@@ -15,7 +15,7 @@ import { EvidenceCard } from "../components/bits";
 import { Modal } from "../components/ui";
 import { ClueButton } from "../components/CaseHelp";
 import { useGame } from "../game/GameContext";
-import { listen, loadNeuralVoices, micSupported, neuralSupported, speak, stopSpeaking, voiceSupported, type Listener } from "../voice";
+import { listen, loadNeuralVoices, micSupported, neural, neuralSupported, onNeuralChange, speak, stopSpeaking, voiceSupported, type Listener } from "../voice";
 import { NoCase } from "./NoCase";
 
 export function Interrogation() {
@@ -213,6 +213,7 @@ function Room({ suspect }: { suspect: SuspectView }) {
             <span className="led text-xl sm:text-2xl">● REC</span>
           </div>
           <StressMonitor stress={suspect.stress} trust={suspect.trust} />
+          {settings.voices && settings.voiceEngine === "neural" && <VoiceStatus />}
           <div className="hidden flex-col gap-3 sm:flex" aria-label="Other suspects">
             {others.map((o) => (
               <button key={o.id} onClick={() => go(`interrogate/${o.id}`)} title={`Question ${o.name}`} aria-label={`Question ${o.name}`}
@@ -281,4 +282,27 @@ function StressMonitor({ stress, trust }: { stress: number; trust: number }) {
       <div className="mt-1 flex justify-between font-type text-[0.65rem] uppercase tracking-widest text-smoke-400"><span>Stress {Math.round(stress)}</span><span>Trust {Math.round(trust)}</span></div>
     </div>
   );
+}
+
+/** Shows whether the realistic voices are downloading, ready, or failed (with the reason). */
+function VoiceStatus() {
+  const [, force] = useState(0);
+  useEffect(() => onNeuralChange(() => force((n) => n + 1)), []);
+  const box = "w-40 border-2 border-[#3a3a3a] bg-black/85 p-2 text-[0.7rem] leading-snug sm:w-48";
+  if (neural.status === "loading") return (
+    <div className={box} role="status">
+      <div className="text-smoke-200">Downloading realistic voices… {Math.round(neural.progress * 100)}%</div>
+      <div className="mt-1 h-1 overflow-hidden bg-white/10"><div className="h-full bg-paper-100 transition-all" style={{ width: `${Math.round(neural.progress * 100)}%` }} /></div>
+      <div className="mt-1 text-smoke-500">Standard voices until it's done.</div>
+    </div>
+  );
+  if (neural.status === "error") return (
+    <div className={box} role="status">
+      <div className="text-blood-400">Realistic voices failed to load.</div>
+      <div className="mt-1 break-words text-smoke-400">{neural.error}</div>
+      <button className="mt-1 underline text-paper-100" onClick={() => { neural.status = "off"; loadNeuralVoices(); }}>Try again</button>
+    </div>
+  );
+  if (neural.status === "ready") return <div className={`${box} text-emerald-300`} role="status">Realistic voices on{neural.error ? ` (last line fell back: ${neural.error})` : ""}</div>;
+  return null;
 }

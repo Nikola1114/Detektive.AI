@@ -1,0 +1,108 @@
+import type { ResponseNode, SuspectDef } from "../../types.ts";
+
+const anchorAdmission: ResponseNode = {
+  when: { notRevealed: ["anchor"] },
+  text: "...Yeah. That's me walking out. I owed money to Vinnie Sato — twelve grand, and he said tonight or else. I walked to the Drowned Anchor at half ten and paid him what I had. When I got back at four minutes past eleven the outage alert was on the screen and I knew exactly how it'd look. So I wrote 'technical fault'. Thirty years of service and I wrote a lie on an incident report.",
+  mood: "shaken", stress: 15, trust: 5, reveals: ["anchor"], grants: ["T_ADRIAN_ANCHOR"],
+};
+
+const codeExplanation: ResponseNode = {
+  when: { notRevealed: ["code"] },
+  text: "VS-7731 — that's a Vigil maintenance code, not an admin login. I never see those. Vigil emails them to whoever booked the maintenance on the tenant side, and for Lumen that's Mercer's assistant. Sofia Bennett. She books everything. With that code and the Vigil app you can pause the cameras from a phone on the street.",
+  mood: "cooperative", trust: 5, reveals: ["code"], grants: ["T_ADRIAN_CODE"],
+};
+
+export const adrian: SuspectDef = {
+  id: "adrian",
+  name: "Adrian Cole",
+  age: 51,
+  height: "1.88 m",
+  profession: "Head of Security, Blackwood Tower",
+  relation: "Building security chief",
+  personality: "Gruff, proud ex-cop. Bristles at any question about his competence; responds to respect.",
+  bio: "Twenty-two years with BCPD's Harbour Division before a knee injury pushed him into private security. Has run Blackwood Tower's security for six years and controls its surveillance system.",
+  motive: "Unknown. Controlled the cameras that failed at exactly the wrong moment.",
+  alibi: "Claims he never left the security desk and the camera outage was a technical fault.",
+  portrait: { skin: "#c7a088", hair: "receding", hairColor: "#8d8780", outfit: "uniform", outfitColor: "#20242c", beard: "moustache", age: "older", build: "broad" },
+  initial: { stress: 25, trust: 25, mood: "defensive" },
+  greeting: "Detective. I was on the job twenty-two years before you got your badge, so let's skip the part where you explain procedure to me.",
+  topics: [
+    { id: "alibi", label: "Where were you last night?", keywords: ["where", "alibi", "last night", "evening", "desk", "post", "whereabouts", "night"],
+      nodes: [
+        { when: { revealed: ["anchor"] }, text: "The Drowned Anchor, 22:31 to 23:04, paying off a bookie. You know. I've stopped lying about it.", mood: "guarded" },
+        { text: "At my desk. Six p.m. until the cleaner called me up at 23:40. I know how to sit a post.", mood: "defensive", grants: ["T_ADRIAN_DESK"] },
+      ], repeat: "At my desk. Same answer as last time." },
+    { id: "outage", label: "What happened to the cameras?", keywords: ["cameras", "camera", "outage", "blackout", "glitch", "fault", "footage", "recording", "malfunction", "cctv"],
+      nodes: [
+        { when: { revealed: ["anchor"] }, text: "Someone switched them off with a maintenance override. Not me. I didn't even know until I got back from the Anchor.", mood: "guarded" },
+        { text: "Firmware. The Vigil system's been flaky since the upgrade. Eleven minutes of nothing. It's in my report.", mood: "defensive", stress: 5, grants: ["T_ADRIAN_DESK"] },
+      ] },
+    { id: "victim", label: "What did you think of Daniel Mercer?", keywords: ["daniel", "mercer", "victim", "him", "think", "like"],
+      nodes: [{ text: "Paid on time. Never learned my name — called me 'Security'. Not a crime, I suppose. Not a motive either, before you ask.", mood: "guarded" }] },
+    { id: "access", label: "How does building access work?", keywords: ["access", "keycard", "card", "door", "lock", "entrance", "service", "dock", "stairwell", "entry", "garage", "how"],
+      nodes: [{ text: "Executive floor is all keycard. Mercer's suite auto-locks when the door shuts — no key, no trick. Lobby and service dock still run on the old cameras, separate system. The garage lift goes straight up without passing my desk. And service stairwell B only has cameras on 40 to 42. I've been asking for a refit for a year.", mood: "cooperative" }] },
+    { id: "others", label: "Who would want him dead?", keywords: ["who", "enemies", "enemy", "suspect", "kill", "killed", "motive", "anyone", "else"],
+      nodes: [{ text: "Reed left with a face like thunder. The wife still has a key to half the city. Don't ask me to do your job for you, detective.", mood: "guarded" }] },
+    { id: "rapport", label: "You were a cop, weren't you?", keywords: ["cop", "police", "officer", "served", "career", "colleague", "respect", "harbour", "experience"],
+      nodes: [
+        { when: { notRevealed: ["rapport1"] }, text: "Twenty-two years, Harbour Division. Then my knee went and the pension didn't cover the mortgage. So now I babysit a glass tower for men who call me 'Security'. ...You'd have liked the old precinct.", mood: "calm", trust: 15, stress: -10, reveals: ["rapport1"] },
+        { text: "Yeah. Different times.", mood: "calm", stress: -5 },
+      ] },
+    { id: "debt", label: "Do you owe money to Vinnie Sato?", keywords: ["sato", "bookie", "debt", "gambling", "bet", "owe", "anchor", "bar", "napkin"], requires: { anyEvidence: ["napkin", "bartender"] },
+      nodes: [anchorAdmission, { text: "I owe him six more by Friday. Want to lend me it?", mood: "guarded" }] },
+    { id: "code", label: "Who has override code VS-7731?", keywords: ["vs-7731", "7731", "code", "override", "maintenance", "vigil"], requires: { anyEvidence: ["camera_log"] },
+      nodes: [
+        { ...codeExplanation, when: { notRevealed: ["code"], revealed: ["anchor"] } },
+        { ...codeExplanation, when: { notRevealed: ["code"], minTrust: 40 } },
+        { when: { revealed: ["code"] }, text: "Vigil sends those codes to the tenant contact. Bennett. I've told you.", mood: "cooperative" },
+        { text: "That's a vendor code. Ask Vigil.", mood: "guarded", stress: 5 },
+      ] },
+  ],
+  reactions: {
+    lobby_footage: [anchorAdmission, { text: "Yes. That's me leaving. I've told you why.", mood: "guarded" }],
+    napkin: [anchorAdmission, { text: "Sato's napkin. Yes. My debt.", mood: "guarded" }],
+    bartender: [anchorAdmission, { text: "Mae saw me. Good. That's my alibi, for what it's worth.", mood: "guarded" }],
+    camera_log: [
+      { ...codeExplanation, when: { notRevealed: ["code"], revealed: ["anchor"] } },
+      { ...codeExplanation, when: { notRevealed: ["code"], minTrust: 40 } },
+      { when: { revealed: ["code"] }, text: "Remote override, from a phone. Whoever did it never came near my console.", mood: "cooperative" },
+      { text: "...A maintenance override. Remote. Huh. That's not — I need to look at that.", mood: "nervous", stress: 10 },
+    ],
+    incident_report: [
+      { when: { revealed: ["anchor"] }, text: "It's a lie. I know. I'll put it right.", mood: "shaken" },
+      { text: "That's my report. I stand by it.", mood: "defensive", stress: 10 },
+    ],
+    vigil_binder: [{ ...codeExplanation, text: "There it is. VS-7731, sent to the tenant contact — Sofia Bennett. I never had that code. She books the maintenance; Vigil emails it to her. With the app, you could pause the cameras from a phone on the street." },
+      { text: "Vigil, the tenant contact, Bennett. I've told you.", mood: "cooperative" }],
+    door_log: [{ text: "EXEC-SPARE. That's the spare executive card — Mercer's assistant has it, for courier runs. And look: in at the dock at 22:38. Someone who knew the dock camera is on the old system wouldn't care... unless they kept their face off it.", mood: "cooperative" }],
+    dock_footage: [{ text: "Somebody small, who knew to keep their face away from the lens. Came in the back door like they'd done it before. That's someone who knows this building.", mood: "cooperative" }],
+    garage_log: [{ text: "Reed came back? He wouldn't have passed my desk — the garage lift goes straight up.", mood: "calm" }],
+    suspect_files: [{ text: "One eighty-eight. They measured me for the force in '96 and I haven't shrunk.", mood: "calm" }],
+    visitor_log: [{ text: "Hayes. Pushy kid. No appointment, no entry. I watched him walk off down the street at ten to nine.", mood: "calm" }],
+    keycard_registry: [{ text: "Bennett's had that spare since she started. Never reported it lost — I'd have deactivated it.", mood: "cooperative" }],
+    T_ADRIAN_DESK: [{ text: "That's what I said.", mood: "defensive" }],
+  },
+  defaultReaction: ["Means nothing to me.", "Not my department.", "Show me something useful, detective."],
+  deflection: "Solve your own case, detective. I hung up the badge years ago.",
+  unknown: ["Come again?", "Speak plainly, detective. I'm too old for riddles."],
+  ai: {
+    voice: "Gruff, blunt, cop slang, short sentences. Proud and touchy about competence. Softens toward people who respect his police career.",
+    knows: [
+      "He ran Blackwood Tower security for six years after 22 years at BCPD Harbour Division.",
+      "Building facts: executive suite auto-locks on close; lobby and service dock cameras are an older separate system; the garage lift bypasses the security desk; stairwell B has cameras only on floors 40–42.",
+      "He turned Oliver Hayes away at the lobby desk at 20:52.",
+      "He left his post at 22:31 to pay $6,000 of a $12,000 gambling debt to bookie Vinnie Sato at the Drowned Anchor, and returned at 23:04.",
+      "He found the camera outage alert on return and falsely reported it as a 'technical fault' at 23:20.",
+      "The override code VS-7731 is a Vigil maintenance code emailed to the tenant's scheduling contact — Sofia Bennett for Lumen. He never had it.",
+      "The spare executive card EXEC-SPARE belongs to Sofia Bennett and was never reported lost.",
+      "He discovered the body at 23:40 after the cleaner called him. He does not know who killed Mercer.",
+    ],
+    hides: ["That he left his post (until shown the lobby footage, the bookie's napkin, or the bartender's statement).", "His gambling debts."],
+    guarded: [
+      { term: "Sato", unlockedBy: "anchor" }, { term: "Anchor", unlockedBy: "anchor" },
+      { term: "debt", unlockedBy: "anchor" }, { term: "bookie", unlockedBy: "anchor" },
+    ],
+  },
+  majorReveals: ["anchor", "code"],
+  truth: "Adrian owed a bookie $12,000. At 22:31 he abandoned his post to pay him at the Drowned Anchor, returning at 23:04 to find the camera outage alert. Afraid he'd be blamed, he wrote it up as a 'technical fault'. He never had the override code.",
+};

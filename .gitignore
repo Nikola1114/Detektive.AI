@@ -1,0 +1,7 @@
+node_modules
+dist
+data/players
+data/generated
+.env
+data/test
+e2e-shots

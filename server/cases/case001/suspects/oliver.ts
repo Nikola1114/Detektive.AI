@@ -1,0 +1,96 @@
+import type { ResponseNode, SuspectDef } from "../../types.ts";
+
+const lobbyAdmission: ResponseNode = {
+  when: { notRevealed: ["lobby"] },
+  text: "...Fine. I went to the lobby. I wanted Mercer's comment on the record before we ran the story — you always give them the chance to respond. Cole threw me out at ten to nine and I went back to the newsroom. I lied because the man was murdered three hours later and I'm the guy writing a hit piece on him. That's not a great look.",
+  mood: "nervous", stress: 10, trust: 5, reveals: ["lobby"], grants: ["T_OLIVER_LOBBY"],
+};
+
+const lanternReveal: ResponseNode = {
+  when: { notRevealed: ["lantern"] },
+  text: "'I know about Lantern'... He knew. Oh God, he knew. ...Look at this. Lantern messaged me at 21:20 that night: 'He knows. I'll fix it. Don't contact me.' Lantern is Sofia Bennett. Her brother was Thomas Kessler. I thought 'fix it' meant she'd get a lawyer. I didn't ask. I was too busy rewriting paragraph nine.",
+  mood: "shaken", stress: 15, trust: 10, reveals: ["lantern"], grants: ["T_OLIVER_LANTERN"],
+};
+
+export const oliver: SuspectDef = {
+  id: "oliver",
+  name: "Oliver Hayes",
+  age: 34,
+  height: "1.83 m",
+  profession: "Investigative journalist, Blackwood Ledger",
+  relation: "Journalist investigating the victim",
+  personality: "Driven, sardonic, idealistic. Protects his sources at any cost.",
+  bio: "Award-winning reporter who has spent eight months investigating Lumen Dynamics. His exposé was due to run on 18 November. He reported receiving threatening messages two weeks ago.",
+  motive: "Mercer's lawyers had threatened to sue him into oblivion. A dead man can't kill a story.",
+  alibi: "Claims he never entered Blackwood Tower that evening and was in the newsroom all night.",
+  portrait: { skin: "#d4b090", hair: "messy", hairColor: "#5b412e", outfit: "jacket", outfitColor: "#4a3a2c", beard: "stubble", age: "young", build: "slim" },
+  initial: { stress: 20, trust: 30, mood: "guarded" },
+  greeting: "Detective. Before you start — I'm not giving you my notes, and I'm not naming my sources. Everything else, ask away.",
+  topics: [
+    { id: "alibi", label: "Where were you last night?", keywords: ["where", "alibi", "last night", "evening", "newsroom", "tower", "whereabouts", "night"],
+      nodes: [
+        { when: { revealed: ["lobby"] }, text: "Lobby at 20:50, thrown out at 20:52, newsroom from 21:34 until one in the morning. Ask Priya, the night editor.", mood: "calm" },
+        { text: "In the newsroom, all night. I wasn't anywhere near Blackwood Tower — never set foot in the place.", mood: "calm", grants: ["T_OLIVER_NEVER"] },
+      ], repeat: "Newsroom. All night." },
+    { id: "story", label: "What is your story about?", keywords: ["story", "expose", "exposé", "article", "investigation", "publish", "writing", "piece", "halvorsen"],
+      nodes: [{ text: "Lumen. Four million dollars that walked out the door to a shell company called Halvorsen. And a founding myth that's a lie: Daniel Mercer didn't invent Lighthouse. It was due to run on the 18th. Still might.", mood: "cooperative" }] },
+    { id: "victim", label: "What did you think of Daniel Mercer?", keywords: ["daniel", "mercer", "victim", "him", "think", "opinion"],
+      nodes: [{ text: "I spent eight months on Daniel Mercer. He was a thief in a good suit. That doesn't mean I wanted him dead. Dead men don't sue — but they don't get held accountable either.", mood: "guarded" }] },
+    { id: "threats", label: "Tell me about the threats you received.", keywords: ["threat", "threats", "threatened", "messages", "scared", "warning", "drown", "texts"],
+      nodes: [{ text: "Started the day after I called Lumen's finance office about Halvorsen. Burner number. 'Drop the Halvorsen story or you'll drown in it.' Very literary. I reported it; your colleagues filed it under 'occupational hazard'.", mood: "cooperative" }] },
+    { id: "source", label: "Who is your source?", keywords: ["source", "lantern", "insider", "leak", "informant", "who told", "whistleblower"],
+      nodes: [
+        { when: { revealed: ["lantern"] }, text: "You know who. I keep rereading her last message.", mood: "shaken" },
+        { when: { minTrust: 55, notRevealed: ["lantern_hint"] }, text: "I'll go to jail before I burn a source. But I'll tell you this much: Lantern had access to Mercer's calendar and his correspondence. And Lantern was frightened. If Mercer found out who it was... prove that to me and we'll talk.", mood: "guarded", reveals: ["lantern_hint"] },
+        { text: "I don't burn sources, detective. Not for you, not for anyone.", mood: "guarded", stress: 5 },
+      ] },
+    { id: "others", label: "Who would want him dead?", keywords: ["who", "enemies", "enemy", "suspect", "kill", "killed", "motive", "anyone", "else"],
+      nodes: [{ text: "Marcus Reed was robbing Mercer blind, and Mercer had just found out. If I were you, I'd want to know where Reed was at eleven o'clock.", mood: "cooperative" }] },
+    { id: "rapport", label: "I've read your work. It's good.", keywords: ["read", "your work", "journalism", "admire", "good reporter", "respect", "articles"],
+      nodes: [
+        { when: { notRevealed: ["rapport1"] }, text: "...Thanks. Not many cops say that. Most of them say it through a lawyer.", mood: "calm", trust: 15, stress: -10, reveals: ["rapport1"] },
+        { text: "Flattery will get you a quote, detective, not a source.", mood: "calm", stress: -5 },
+      ] },
+    { id: "tower", label: "Why did you go to Blackwood Tower?", keywords: ["lobby", "visitor", "signed", "cole", "turned away", "denied", "tower"], requires: { anyEvidence: ["visitor_log", "lobby_footage"] },
+      nodes: [lobbyAdmission, { text: "For a comment. I got thrown out. That's the whole of it.", mood: "calm" }] },
+  ],
+  reactions: {
+    visitor_log: [lobbyAdmission, { text: "Yes, my signature. I've explained.", mood: "calm" }],
+    lobby_footage: [lobbyAdmission, { text: "Yes, that's me getting thrown out. Riveting television.", mood: "calm" }],
+    laptop: [lanternReveal, { text: "I've told you everything about Lantern.", mood: "shaken" }],
+    dossier: [{ ...lanternReveal, text: "Mercer had her investigated. Then he knew. ...Look at this. Lantern messaged me at 21:20 that night: 'He knows. I'll fix it. Don't contact me.' Lantern is Sofia Bennett — Thomas Kessler's sister. I thought 'fix it' meant she'd get a lawyer. I didn't ask." },
+      { text: "I've told you everything about Lantern.", mood: "shaken" }],
+    threats: [{ text: "Those are the ones. Burner number. Whoever it was wanted Halvorsen buried — that narrows it down, doesn't it?", mood: "cooperative" }],
+    expose: [{ text: "That's mine. Read it — it's good. The CMS history will tell you I was rewriting it at 22:40 and 22:47.", mood: "calm" }],
+    audit: [{ text: "That's the Halvorsen trail, in Mercer's own handwriting? He knew about Reed, then. He knew everything.", mood: "cooperative" }],
+    newsroom_log: [{ text: "There you go. I was rewriting paragraph nine at 22:47. Thrilling alibi.", mood: "calm" }],
+    patent: [{ text: "Thomas Kessler. He wrote Lighthouse; Mercer took it and fired him. Kessler died in 2024. That was going to be the second half of my story.", mood: "cooperative" }],
+    reporter_notebook: [{ text: "That's private. ...Fine. 'L. knows T.K. too well.' I wondered. I didn't want to know.", mood: "guarded", stress: 10 }],
+    garage_log: [{ text: "Reed came back at 22:03? Told you.", mood: "calm" }],
+    suspect_files: [{ text: "Six foot. Whatever you're measuring, I don't fit it.", mood: "calm" }],
+    T_OLIVER_NEVER: [{ text: "That's what I said.", mood: "calm" }],
+  },
+  defaultReaction: ["No comment — genuinely, I don't know what that is.", "You'll have to give me more than that.", "Interesting. What does it have to do with me?"],
+  deflection: "If I knew who killed him, detective, it would be on the front page. Do your own legwork.",
+  unknown: ["Sorry, lost me there.", "Is that a question, detective?"],
+  ai: {
+    voice: "Fast, sardonic, articulate; newspaper idioms. Principled about sources. Shows guilt beneath the sarcasm.",
+    knows: [
+      "He has investigated Lumen for eight months: $4.2M paid to shell company Halvorsen, and evidence that engineer Thomas Kessler, not Mercer, invented Lighthouse.",
+      "His insider source codenamed LANTERN has access to Mercer's calendar and correspondence. LANTERN is Sofia Bennett, Kessler's half-sister.",
+      "At 21:20 LANTERN messaged him: 'He knows. I'll fix it. Don't contact me.'",
+      "He received anonymous threats about Halvorsen starting the day after he called Lumen's finance office.",
+      "He went to the Tower lobby at 20:50 to get Mercer's comment and was turned away at 20:52 by Adrian Cole.",
+      "He worked in the Ledger newsroom from 21:34 to 01:12; CMS edits at 22:40, 22:47, 23:02.",
+      "He does not know who killed Mercer.",
+    ],
+    hides: ["That he went to the Tower lobby (until shown the visitor log or lobby footage).", "Lantern's identity and her 21:20 message (until shown proof that Mercer knew about Lantern — his synced messages or his investigator's dossier)."],
+    guarded: [
+      { term: "Sofia", unlockedBy: "lantern" }, { term: "Bennett", unlockedBy: "lantern" },
+      { term: "I'll fix it", unlockedBy: "lantern" }, { term: "21:20", unlockedBy: "lantern" },
+      { term: "lobby", unlockedBy: "lobby" }, { term: "turned away", unlockedBy: "lobby" },
+    ],
+  },
+  majorReveals: ["lobby", "lantern"],
+  truth: "Oliver was writing an exposé sourced to LANTERN — Sofia Bennett. He went to the Tower lobby at 20:50 to get Mercer's comment and was turned away, then worked in the newsroom from 21:34 to 01:12. He lied about the lobby out of fear. At 21:20 Lantern told him 'He knows. I'll fix it.' He never asked what she meant.",
+};

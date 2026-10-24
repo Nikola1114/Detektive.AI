@@ -9,7 +9,7 @@
     "dev:server": "node scripts/dev.mjs --server-only",
     "dev:client": "vite",
     "build": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit && vite build",
-    "start": "NODE_ENV=production node --env-file-if-exists=.env server/index.ts",
+    "start": "node --env-file-if-exists=.env server/index.ts",
     "test": "DETECTIVE_AI_DISABLE=1 DETECTIVE_DATA_DIR=data/test node --test tests/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit",
     "test:e2e": "node tests/e2e/playthrough.mjs e2e-shots && node tests/e2e/generated.mjs e2e-shots"

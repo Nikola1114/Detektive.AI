@@ -2,6 +2,7 @@
 import { BookOpen, Briefcase, Gavel, Map, Network, Settings, Users, UserRound, Home } from "lucide-react";
 import type { ReactNode } from "react";
 import { useGame } from "../game/GameContext";
+import { ClueButton, GiveUpButton } from "./CaseHelp";
 
 const NAV = [
   { path: "office", label: "Office", icon: Home },
@@ -27,7 +28,7 @@ export function GameLayout({ children, active }: { children: ReactNode; active: 
             <div className="font-display text-base font-bold leading-tight text-paper-100">{state.title}</div>
             <div className="mt-2 flex items-center justify-between text-[0.7rem] text-smoke-400">
               <span>{state.cluesFound}/{state.evidenceTotal} clues</span>
-              <span className={state.status === "active" ? "text-emerald-400" : "text-amber-400"}>{state.status === "active" ? "Open" : "Closed"}</span>
+              <span className={state.status === "active" ? "text-emerald-400" : "text-amber-400"}>{state.status === "active" ? (state.mode === "easy" ? "Open · Easy" : "Open") : "Closed"}</span>
             </div>
           </div>
         )}
@@ -42,6 +43,7 @@ export function GameLayout({ children, active }: { children: ReactNode; active: 
             </button>
           ))}
         </nav>
+        <div className="px-4 pb-2"><GiveUpButton className="px-1 py-1" /></div>
         <div className="flex flex-col gap-0.5 border-t border-white/5 p-2">
           <button onClick={() => go("cases")} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-smoke-400 hover:bg-white/5 hover:text-white"><Briefcase size={16} />Case Files</button>
           <button onClick={() => go("profile")} className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-white/5 hover:text-white ${active === "profile" ? "text-amber-300" : "text-smoke-400"}`}>
@@ -51,6 +53,7 @@ export function GameLayout({ children, active }: { children: ReactNode; active: 
         </div>
       </aside>
       <main className="min-w-0 flex-1 pb-20 md:pb-0">{children}</main>
+      <ClueButton className="fixed bottom-20 right-3 z-40 md:bottom-auto md:right-5 md:top-4" />
       <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-white/10 bg-char-900/95 backdrop-blur md:hidden" aria-label="Investigation">
         {NAV.map((n) => (
           <button key={n.path} onClick={() => go(n.path)} aria-current={active === n.path ? "page" : undefined}

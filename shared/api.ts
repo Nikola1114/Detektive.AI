@@ -21,9 +21,12 @@ export interface VoiceProfile {
   pitch: number; // 0.5–1.5
   rate: number; // 0.7–1.3
   seed: number; // picks a distinct voice among good candidates
+  /** Preferred voice for the realistic (neural) voice engine, e.g. "bf_emma". */
+  neural?: string;
 }
 
 export interface PortraitSpec {
+  gender?: "female" | "male";
   skin: string;
   hair: "bob" | "short" | "slick" | "bald" | "long" | "bun" | "messy" | "receding" | "wavy";
   hairColor: string;
@@ -155,6 +158,7 @@ export interface CaseState {
   date: string;
   difficulty: string;
   synopsis: string;
+  stamp: string;
   briefing: string[];
   victim: { name: string; age: number; description: string };
   status: CaseStatus;
@@ -174,6 +178,8 @@ export interface CaseState {
   accusation: AccusationOptions;
   accusations: AccusationRecord[];
   hint: string;
+  mode: "easy" | "normal";
+  hintsUsed: number;
   startedAt: number;
   updatedAt: number;
 }
@@ -234,7 +240,7 @@ export interface Resolution {
   verdict?: Verdict;
   scenes: ResolutionScene[];
   truths: { suspect: string; text: string }[];
-  stats: { cluesFound: number; cluesTotal: number; deductions: number; deductionTotal: number; contradictions: number; accusations: number; minutes: number };
+  stats: { cluesFound: number; cluesTotal: number; deductions: number; deductionTotal: number; contradictions: number; accusations: number; minutes: number; hints: number; mode: "easy" | "normal" };
 }
 
 export interface Achievement { id: string; title: string; description: string; unlockedAt?: number; }

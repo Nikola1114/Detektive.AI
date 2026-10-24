@@ -5,7 +5,7 @@
 import type {
   AccuseResult, BoardState, ConnectResult, GameEvents, HotspotView, InspectResult, InterrogateResult, Mood, NoteTag, Verdict,
 } from "../../shared/api.ts";
-import type { CaseDef, EvidenceDef, ResponseNode, SuspectDef, TopicDef } from "../cases/types.ts";
+import type { CaseDef, DeductionDef, EvidenceDef, ResponseNode, SuspectDef, TopicDef } from "../cases/types.ts";
 import { availableTopics, denial, detectIntent, findEvidenceMention, goodbye, pickNode, pressed, type Intent } from "../dialogue/authored.ts";
 import { voiceTurn } from "../dialogue/ai.ts";
 import { XP, checkAchievements, grantXp, unlockAchievement } from "./progression.ts";
@@ -110,7 +110,7 @@ export function hotspots(def: CaseDef, p: CaseProgress, locationId: string): Hot
     .filter((h) => check(p, h.requires))
     .map((h) => ({
       id: h.id, label: h.label, x: h.x, y: h.y, w: h.w, h: h.h, prop: h.prop,
-      subtle: Boolean(h.subtle) && !p.inspected.includes(h.id),
+      subtle: Boolean(h.subtle) && !p.inspected.includes(h.id) && p.mode !== "easy",
       inspected: p.inspected.includes(h.id),
       resolved: h.evidence ? has(p, h.evidence) : p.inspected.includes(h.id),
     }));
@@ -442,8 +442,9 @@ export function accuse(ctx: Ctx, a: AccusePayload): AccuseResult {
   const sequenceOk = a.sequence === sol.sequence;
   const name = def.suspects.find((s) => s.id === a.suspectId)!.name;
 
+  const easy = p.mode === "easy";
   let verdict: Verdict;
-  if (keyCount < 2 || (suspectOk && (relevant.length < 2 || categories.length < 2))) verdict = "insufficient";
+  if (easy ? relevant.length < 1 && keyCount < 1 : keyCount < 2 || (suspectOk && (relevant.length < 2 || categories.length < 2))) verdict = "insufficient";
   else if (!suspectOk) verdict = "incorrect";
   else if (motiveOk && methodOk && sequenceOk) verdict = "solved";
   else verdict = "incomplete";
@@ -467,6 +468,14 @@ export function accuse(ctx: Ctx, a: AccusePayload): AccuseResult {
     unlockAchievement(save, ctx.ev, "first_case");
     if (!p.accusations.some((x) => x.verdict === "incorrect")) unlockAchievement(save, ctx.ev, "no_false");
     if (firstTry && categories.length === 3) unlockAchievement(save, ctx.ev, "perfect_deduction");
+  } else if (verdict === "incomplete" && easy) {
+    // Easy mode: say exactly which parts are wrong and let the player try again.
+    title = "Right Suspect — Almost There";
+    summary = `You've got the right person. The DA just needs the rest of the story to match the evidence.`;
+    feedback.push(`Motive: ${motiveOk ? "correct ✔" : "not right yet ✘"}`);
+    feedback.push(`Method: ${methodOk ? "correct ✔" : "not right yet ✘"}`);
+    feedback.push(`Sequence of events: ${sequenceOk ? "correct ✔" : "not right yet ✘"}`);
+    feedback.push("Fix the parts marked ✘ and accuse again.");
   } else if (verdict === "incomplete") {
     title = "Correct Suspect, Incomplete Reasoning";
     summary = `${name} is charged — but the DA is uneasy. Parts of your theory don't match the evidence, and the defence will exploit every gap.`;
@@ -484,14 +493,17 @@ export function accuse(ctx: Ctx, a: AccusePayload): AccuseResult {
       summary = `The DA reads your file twice, then slides it back across the desk. The case against ${name} doesn't hold: the evidence doesn't put them in that office when it mattered.`;
       feedback.push("Revisit the alibis. Which of them are actually backed by hard evidence?");
       feedback.push("Remember that people lie for reasons other than murder.");
+      if (easy) feedback.push(`${name} has an alibi the evidence supports. Look for the suspect whose story the evidence breaks.`);
     } else {
       title = "Insufficient Evidence";
       summary = "The DA won't take this to a jury. Your evidence doesn't establish enough of the case.";
       feedback.push("Cite hard evidence, not just impressions — key evidence carries the most weight.");
       feedback.push("A strong file shows opportunity, plus means or motive.");
     }
-    const remaining = MAX_ACCUSATIONS - p.accusations.length;
-    if (remaining <= 0) {
+    const remaining = easy ? Infinity : MAX_ACCUSATIONS - p.accusations.length;
+    if (easy) {
+      feedback.push("Easy mode: you can accuse as many times as you like.");
+    } else if (remaining <= 0) {
       p.status = "failed";
       caseClosed = true;
       save.stats.casesClosed++;
@@ -506,9 +518,9 @@ export function accuse(ctx: Ctx, a: AccusePayload): AccuseResult {
     verdict, title, summary, feedback, caseClosed,
     score: {
       suspect: suspectOk,
-      motive: caseClosed && suspectOk ? motiveOk : null,
-      method: caseClosed && suspectOk ? methodOk : null,
-      sequence: caseClosed && suspectOk ? sequenceOk : null,
+      motive: (caseClosed || easy) && suspectOk ? motiveOk : null,
+      method: (caseClosed || easy) && suspectOk ? methodOk : null,
+      sequence: (caseClosed || easy) && suspectOk ? sequenceOk : null,
       evidenceStrength: Math.min(1, relevant.length / 6),
     },
   };
@@ -518,4 +530,106 @@ export function abandon(ctx: Ctx) {
   requireActive(ctx);
   ctx.p.status = "abandoned";
   ctx.save.stats.casesClosed++;
+}
+
+// ───────────────────────── easy mode & clues ─────────────────────────
+
+/** Easy mode: any deduction whose evidence has been found is made automatically. */
+export function autoDeduce(ctx: Ctx) {
+  if (ctx.p.mode !== "easy" || ctx.p.status !== "active") return;
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const d of ctx.def.deductions) {
+      if (d.id in ctx.p.deductions) continue;
+      const pair = d.pairs.find(([a, b]) => has(ctx.p, a) && has(ctx.p, b));
+      if (pair && learnDeduction(ctx, d.id, pair)) changed = true;
+    }
+  }
+}
+
+export function setMode(ctx: Ctx, mode: "easy" | "normal") {
+  requireActive(ctx);
+  ctx.p.mode = mode === "easy" ? "easy" : "normal";
+  autoDeduce(ctx);
+}
+
+interface Clue { target: string; vague: string; specific: string; }
+
+/** Finds the most useful next step for a stuck player. */
+function findClue(ctx: Ctx): Clue {
+  const { def, p } = ctx;
+  const first = (n: string) => n.split(" ")[0];
+
+  // 1. Evidence still lying around in places you can reach (current location first).
+  const locs = [...def.locations].sort((a, b) => Number(b.id === p.currentLocation) - Number(a.id === p.currentLocation));
+  for (const loc of locs) {
+    if (!p.unlocked.includes(loc.id)) continue;
+    const h = loc.hotspots.find((x) => x.evidence && !has(p, x.evidence) && check(p, x.requires));
+    if (h) return {
+      target: `loc:${h.id}`,
+      vague: `There's still something to find at ${loc.name}.`,
+      specific: `Go to ${loc.name} and examine the ${h.label.charAt(0).toLowerCase() + h.label.slice(1)}${h.subtle && p.mode !== "easy" ? " — switch on Search closely to spot it" : ""}.`,
+    };
+  }
+
+  // 2. Deductions that open up new leads.
+  const gating = new Set(def.locations.flatMap((l) => [...(l.unlock?.deductions ?? []), ...(l.unlock?.anyDeductions ?? []), ...l.hotspots.flatMap((h) => [...(h.requires?.deductions ?? []), ...(h.requires?.anyDeductions ?? [])])]));
+  const linkable = def.deductions.filter((d) => !(d.id in p.deductions) && d.pairs.some(([a, b]) => has(p, a) && has(p, b)));
+  const linkClue = (d: DeductionDef): Clue => {
+    const [a, b] = d.pairs.find(([x, y]) => has(p, x) && has(p, y))!;
+    return { target: `ded:${d.id}`, vague: "Two things you've found belong together. Try connecting them on the evidence board.", specific: `On the evidence board, link ‘${ev(def, a)!.title}’ with ‘${ev(def, b)!.title}’.` };
+  };
+  const urgent = linkable.find((d) => gating.has(d.id));
+  if (urgent) return linkClue(urgent);
+
+  // 3. Questions that will get someone talking.
+  const useful = (n: ResponseNode) => Boolean(n.grants?.length || n.reveals?.some((r) => !r.startsWith("rapport")));
+  for (const s of def.suspects) {
+    const sp = p.suspects[s.id];
+    for (const t of availableTopics(s, p)) {
+      const pick = pickNode(t.nodes, p, sp);
+      if (pick && useful(pick.node) && !sp.usedNodes.includes(`t:${t.id}:${pick.index}`)) {
+        return { target: `topic:${s.id}:${t.id}`, vague: `${s.name} hasn't told you everything yet. Question ${first(s.name)} again.`, specific: `Ask ${s.name}: ‘${t.label}’` };
+      }
+    }
+  }
+
+  // 4. Evidence that will make someone crack (possibly after more than one try).
+  for (const s of def.suspects) {
+    const sp = p.suspects[s.id];
+    for (const id of Object.keys(p.discovered)) {
+      const nodes = s.reactions[id];
+      if (!nodes) continue;
+      const pick = pickNode(nodes, p, sp);
+      if (!pick || sp.usedNodes.includes(`ev:${id}:${pick.index}`) && !useful(pick.node)) continue;
+      const fresh = !sp.usedNodes.includes(`ev:${id}:${pick.index}`);
+      const pressure = !useful(pick.node) && (pick.node.stress ?? 0) > 0 && nodes.some((n) => n.reveals?.some((r) => !r.startsWith("rapport") && !sp.revealed.includes(r)));
+      if (fresh && (useful(pick.node) || pressure)) {
+        return { target: `ev:${s.id}:${id}`, vague: `Something you've found could make ${first(s.name)} talk.`, specific: `Show ${s.name} the ${ev(def, id)!.title}${pressure ? " — and keep pressing if they deny it" : ""}.` };
+      }
+    }
+  }
+
+  // 5. Any other connections on the board.
+  if (linkable.length) return linkClue(linkable[0]);
+
+  // 6. Locked places.
+  const locked = def.locations.find((l) => !p.unlocked.includes(l.id));
+  if (locked) return { target: `lock:${locked.id}`, vague: `There's a lead you haven't opened yet. ${locked.unlockHint}`, specific: `To open the next location: ${locked.unlockHint}` };
+
+  return {
+    target: "accuse",
+    vague: "You've found what there is to find. Who had the opportunity, the means and the motive? Time to make your accusation.",
+    specific: "Look at your contradictions: whose lies hide the crime, and whose hide something else? Then make your accusation.",
+  };
+}
+
+export function askForClue(ctx: Ctx): { text: string; specific: boolean } {
+  requireActive(ctx);
+  const c = findClue(ctx);
+  // Asking twice about the same thing (or playing in easy mode) gets the precise version.
+  const specific = ctx.p.mode === "easy" || ctx.p.lastClue === c.target;
+  ctx.p.lastClue = c.target;
+  ctx.p.hintsUsed = (ctx.p.hintsUsed ?? 0) + 1;
+  return { text: specific ? c.specific : `${c.vague} (Ask again for a more exact clue.)`, specific };
 }

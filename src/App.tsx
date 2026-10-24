@@ -1,6 +1,7 @@
 import { MotionConfig } from "framer-motion";
 import { useEffect } from "react";
 import { audio } from "./audio";
+import { loadNeuralVoices } from "./voice";
 import { Toasts } from "./components/Toasts";
 import { useGame } from "./game/GameContext";
 import { prefersReducedMotion } from "./game/settings";
@@ -24,6 +25,8 @@ const SCREENS: Record<string, () => JSX.Element | null> = {
 
 export function App() {
   const { ready, fatal, route, settings } = useGame();
+
+  useEffect(() => { if (settings.voiceEngine === "neural") loadNeuralVoices(); }, [settings.voiceEngine]);
 
   useEffect(() => {
     if (route.name === "office" || route.name === "notebook" || route.name === "board" || route.name === "accuse") audio.setAmbience("office");

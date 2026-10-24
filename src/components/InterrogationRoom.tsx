@@ -39,13 +39,16 @@ export function InterrogationRoom({ spec, mood, name, speaking }: { spec: Portra
 
       {/* suspect: chair back, torso, head, arms */}
       <rect x="380" y="380" width="240" height="190" rx="14" fill="#141414" />
+      <g transform={spec.gender === "female" ? "translate(75,0) scale(0.85,1)" : undefined}>
       <path d="M395 430 Q330 450 322 575 L678 575 Q670 450 605 430 Z" fill={cloth} />
       <path d="M395 430 Q330 450 322 575 L678 575 Q670 450 605 430 Z" fill="url(#ir-rim)" />
       <path d="M455 432 L500 520 L545 432" fill="none" stroke="#fff" strokeOpacity="0.18" strokeWidth="3" />
       <path d="M392 440 Q370 500 368 570 M608 440 Q630 500 632 570" fill="none" stroke="#000" strokeOpacity="0.45" strokeWidth="3" />
+      </g>
       <g className={speaking ? "ir-breathe" : undefined} style={{ transformOrigin: "500px 430px" }}>
         <g transform="translate(390,168) scale(1.1)"><Portrait spec={spec} mood={mood} size={200} bare name={name} /></g>
       </g>
+      <g transform={spec.gender === "female" ? "translate(75,0) scale(0.85,1)" : undefined}>
       {posture === "crossed" && (
         <g>
           <path d="M340 470 Q420 520 560 480 L566 512 Q420 560 334 505 Z" fill={cloth} stroke="#bdbdbd" strokeOpacity="0.35" strokeWidth="2.5" />
@@ -70,6 +73,8 @@ export function InterrogationRoom({ spec, mood, name, speaking }: { spec: Portra
           <ellipse cx="548" cy="590" rx="30" ry="14" fill={skin} />
         </g>
       )}
+
+      </g>
 
       {/* table, folder, tape recorder */}
       <path d="M190 565 L810 565 L975 700 L25 700 Z" fill="url(#ir-table)" />

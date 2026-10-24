@@ -4,10 +4,11 @@ import { api } from "../api";
 import { GameLayout } from "../components/GameLayout";
 import { Button, Modal, SectionTitle } from "../components/ui";
 import { useGame } from "../game/GameContext";
-import { micSupported, speak, voiceSupported } from "../voice";
+import { useEffect } from "react";
+import { loadNeuralVoices, micSupported, neural, neuralSupported, onNeuralChange, speak, voiceSupported } from "../voice";
 
 export function Settings() {
-  const { settings, setSettings, info, caseId, startCase, go, resetAll, notify, state } = useGame();
+  const { settings, setSettings, info, caseId, startCase, go, resetAll, notify, state, mutate } = useGame();
   const [confirm, setConfirm] = useState<null | "case" | "all">(null);
 
   const exportSave = async () => {
@@ -25,6 +26,18 @@ export function Settings() {
       <div className="mx-auto max-w-3xl p-4 sm:p-6">
         <SectionTitle kicker="Preferences" title="Settings" />
 
+        {state && state.status === "active" && (
+          <Section title="Difficulty (current case)">
+            <div className="flex flex-wrap items-center justify-between gap-3 py-2">
+              <div><div className="text-sm text-paper-100">{state.mode === "easy" ? "Easy" : "Detective"}</div><div className="text-xs text-smoke-400">Easy shows every clue, connects evidence for you, and allows unlimited accusations.</div></div>
+              <div className="flex gap-1" role="radiogroup" aria-label="Difficulty">
+                <Button size="sm" role="radio" aria-checked={state.mode === "easy"} variant={state.mode === "easy" ? "primary" : "ghost"} onClick={() => mutate("POST", "/mode", { mode: "easy" })}>Easy</Button>
+                <Button size="sm" role="radio" aria-checked={state.mode !== "easy"} variant={state.mode !== "easy" ? "primary" : "ghost"} onClick={() => mutate("POST", "/mode", { mode: "normal" })}>Detective</Button>
+              </div>
+            </div>
+          </Section>
+        )}
+
         <Section title="Sound">
           <Toggle label="Enable sound" hint="Rain, city ambience, a quiet score and discovery cues — all synthesised in your browser." checked={settings.sound} onChange={(v) => setSettings({ sound: v })} icon={<Volume2 size={16} />} />
           <Slider label="Ambience" value={settings.ambient} disabled={!settings.sound} onChange={(v) => setSettings({ ambient: v })} />
@@ -35,13 +48,29 @@ export function Settings() {
         <Section title="Voices">
           {voiceSupported ? (
             <>
-              <Toggle label="Suspects speak their lines" hint="Uses your browser's built-in voices. Microsoft Edge has the most natural-sounding ones." checked={settings.voices} onChange={(v) => setSettings({ voices: v })} icon={<Mic size={16} />} />
+              <Toggle label="Suspects speak their lines" checked={settings.voices} onChange={(v) => setSettings({ voices: v })} icon={<Mic size={16} />} />
+              <div className={`py-3 ${settings.voices ? "" : "opacity-40"}`}>
+                <div className="text-sm text-paper-100">Voice quality</div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Voice quality">
+                  <button role="radio" aria-checked={settings.voiceEngine === "browser"} disabled={!settings.voices} onClick={() => setSettings({ voiceEngine: "browser" })}
+                    className={`rounded-lg border p-3 text-left text-sm ${settings.voiceEngine === "browser" ? "border-amber-400 bg-amber-500/10" : "border-white/10 hover:border-white/30"}`}>
+                    <div className="font-semibold text-paper-100">Standard</div>
+                    <div className="text-xs text-smoke-400">Your browser's built-in voices. Instant. Best in Microsoft Edge.</div>
+                  </button>
+                  <button role="radio" aria-checked={settings.voiceEngine === "neural"} disabled={!settings.voices || !neuralSupported} onClick={() => { setSettings({ voiceEngine: "neural", voicePromptDismissed: true }); loadNeuralVoices(); }}
+                    className={`rounded-lg border p-3 text-left text-sm ${settings.voiceEngine === "neural" ? "border-amber-400 bg-amber-500/10" : "border-white/10 hover:border-white/30"}`}>
+                    <div className="font-semibold text-paper-100">Realistic (AI voices)</div>
+                    <div className="text-xs text-smoke-400">A neural voice model that runs on your computer. Free; downloads about 90 MB once.</div>
+                  </button>
+                </div>
+                {settings.voiceEngine === "neural" && <NeuralStatusLine />}
+              </div>
               <Slider label="Voice volume" value={settings.voiceVolume} disabled={!settings.voices} onChange={(v) => setSettings({ voiceVolume: v })} />
               <div className={`flex items-center justify-between gap-4 py-3 ${settings.voices ? "" : "opacity-40"}`}>
                 <label htmlFor="vrate" className="text-sm text-paper-100">Speaking speed</label>
                 <input id="vrate" type="range" min={0.7} max={1.4} step={0.05} value={settings.voiceRate} disabled={!settings.voices} onChange={(e) => setSettings({ voiceRate: Number(e.target.value) })} className="w-48" />
               </div>
-              <Button size="sm" variant="ghost" disabled={!settings.voices} onClick={() => speak("Detective. I've told you everything I know.", { gender: "male", pitch: 0.9, rate: 1, seed: 0 }, { volume: settings.voiceVolume, rate: settings.voiceRate })}>Test voice</Button>
+              <Button size="sm" variant="ghost" disabled={!settings.voices} onClick={() => speak("Detective. I've told you everything I know. Now, are we finished here?", { gender: "male", pitch: 0.9, rate: 1, seed: 0, neural: "bm_george" }, { volume: settings.voiceVolume, rate: settings.voiceRate, engine: settings.voiceEngine })}>Test voice</Button>
             </>
           ) : <p className="py-2 text-sm text-smoke-400">Your browser doesn't support spoken voices. Try Microsoft Edge or Google Chrome.</p>}
           {micSupported ? (
@@ -121,4 +150,20 @@ function Slider({ label, value, onChange, disabled }: { label: string; value: nu
       <input id={id} type="range" min={0} max={1} step={0.05} value={value} disabled={disabled} onChange={(e) => onChange(Number(e.target.value))} className="w-48" />
     </div>
   );
+}
+
+function NeuralStatusLine() {
+  const [, force] = useState(0);
+  useEffect(() => onNeuralChange(() => force((n) => n + 1)), []);
+  if (neural.status === "ready") return <p className="mt-2 text-xs text-emerald-300">Realistic voices are ready.</p>;
+  if (neural.status === "error") return (
+    <p className="mt-2 text-xs text-blood-400">Couldn't load the realistic voices ({neural.error}). Using built-in voices instead. <button className="underline" onClick={() => { neural.status = "off"; loadNeuralVoices(); }}>Try again</button></p>
+  );
+  if (neural.status === "loading") return (
+    <div className="mt-2">
+      <div className="h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-amber-400 transition-all" style={{ width: `${Math.round(neural.progress * 100)}%` }} /></div>
+      <p className="mt-1 text-xs text-smoke-400">Downloading realistic voices… {Math.round(neural.progress * 100)}% — built-in voices are used until it's ready.</p>
+    </div>
+  );
+  return null;
 }

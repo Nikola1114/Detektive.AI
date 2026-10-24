@@ -31,8 +31,14 @@ Optional AI dialogue: copy `.env.example` to `.env` and set `ANTHROPIC_API_KEY`.
 The interrogation room is a monochrome scene: the suspect sits across the table under a lamp, and their posture changes with their mood. Replies appear in speech bubbles with a line of body language (*"They avert their gaze."*), a heart-rate monitor shows stress, and other suspects wait on the right.
 
 - **Ask questions any way you like.** Pick a suggested question, or type or speak your own. The game tolerates typos and different wordings, and it understands follow-ups ("why?", "are you sure?"), greetings and "who are you?". If you **mention evidence you've found** ("why was your car in the garage at 22:03?"), that counts as confronting the suspect with it. When it doesn't understand, it suggests what you could ask.
-- **Voices.** Suspects speak their lines aloud, each with their own voice, using the browser's built-in speech. It's free and needs no key; Microsoft Edge has the most natural voices. Click the microphone to ask out loud (Edge or Chrome). You can change voice volume and speed, or turn voices off, in Settings.
+- **Voices.** Suspects speak their lines aloud, each with their own voice. *Standard* uses the browser's built-in speech (instant; best in Microsoft Edge). *Realistic* runs the open-source Kokoro neural voice model on the player's own computer. It's free with no key, downloads about 90 MB once from Hugging Face, and runs in a background worker; if the download fails, the game falls back to standard voices. Click the microphone to ask out loud (Edge or Chrome). Voice quality, volume and speed are in Settings.
 - **AI answers (optional).** With an `ANTHROPIC_API_KEY`, suspects answer typed or spoken questions in their own words, within the safety rules described below.
+
+## Difficulty, clues and giving up
+
+- **Easy or Detective:** you choose when a case starts, and you can switch in Settings. In Easy mode, nothing in a room is hidden, deductions are made automatically as soon as you have both pieces of evidence, suspects confess the moment you show the right evidence, and you can accuse as often as you like. After each attempt you're told which parts (motive, method, sequence) were right.
+- **Ask for a clue:** Sgt. Kane suggests the most useful next step: an object you haven't examined, a question to ask, evidence to show someone, or two items to link. In Detective mode the first clue is vague and asking again gives the exact step. A test proves that a player who does nothing but follow clues can solve every case.
+- **I give up:** reveals the full solution and closes the case. Restart it from Case Files.
 
 ## Share it with friends
 
@@ -48,7 +54,7 @@ Things to know about Render's free plan:
 ## Tests
 
 ```bash
-npm test             # 41 unit/integration tests (no network needed)
+npm test             # 45 unit/integration tests (no network needed)
 npm run test:e2e     # browser playthroughs (server must be running on :8787)
 ```
 

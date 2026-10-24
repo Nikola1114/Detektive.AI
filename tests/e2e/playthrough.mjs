@@ -97,6 +97,7 @@ try {
 
   step("Start Case 001 → briefing");
   await page.getByRole("button", { name: /Start Investigation/ }).click();
+  await page.getByRole("button", { name: /^Detective/ }).click();
   await page.getByRole("dialog").waitFor();
   await page.waitForTimeout(3200);
   await snap("briefing");
@@ -141,7 +142,7 @@ try {
   step("Free-text question");
   await page.goto(`${BASE}/#/interrogate/sofia`);
   await page.getByLabel("Ask your own question").fill("Who was on Daniel's calender for last night?");
-  await page.getByRole("button", { name: "Ask" }).click();
+  await page.getByRole("button", { name: "Ask", exact: true }).click();
   await page.waitForTimeout(900);
   assert((await caseState()).suspects.find((s) => s.id === "sofia").history.at(-1).text.includes("M.R."), "typo'd free-text question understood");
   await snap("interrogation-free-text");

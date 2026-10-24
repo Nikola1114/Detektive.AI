@@ -45,11 +45,15 @@ export function voiceFor(p: VoiceProfile): SpeechSynthesisVoice | null {
 
 export const voiceSupported = Boolean(synth);
 
-export interface SpeakOptions { volume: number; rate: number; onStart?: () => void; onEnd?: () => void; }
+export interface SpeakOptions { volume: number; rate: number; engine?: "browser" | "neural"; onStart?: () => void; onEnd?: () => void; }
 
 export function speak(text: string, profile: VoiceProfile, opts: SpeakOptions) {
-  if (!synth) return;
   stopSpeaking();
+  if (opts.engine === "neural") {
+    if (neural.status === "ready") { speakNeural(text, profile, opts); return; }
+    if (neural.status === "off") loadNeuralVoices(); // fall back to built-in voices while it downloads
+  }
+  if (!synth) return;
   // Read the words, not the punctuation flourishes.
   const clean = text.replace(/["“”]/g, "").replace(/—/g, ", ").replace(/\.\.\./g, "… ");
   const u = new SpeechSynthesisUtterance(clean);
@@ -67,7 +71,106 @@ export function speak(text: string, profile: VoiceProfile, opts: SpeakOptions) {
 
 export function stopSpeaking() {
   if (synth && (synth.speaking || synth.pending)) synth.cancel();
+  stopNeural();
   audio.duck(false);
+}
+
+// ── Realistic voices: the Kokoro neural model, run in a background worker ──
+
+export type NeuralStatus = "off" | "loading" | "ready" | "error";
+export const neural = { status: "off" as NeuralStatus, progress: 0, error: "" };
+const neuralListeners = new Set<() => void>();
+export function onNeuralChange(fn: () => void) { neuralListeners.add(fn); return () => { neuralListeners.delete(fn); }; }
+const emit = () => neuralListeners.forEach((f) => f());
+
+let worker: Worker | null = null;
+let playCtx: AudioContext | null = null;
+let session = 0; // increments on every new line or stop, cancelling stale audio
+let source: AudioBufferSourceNode | null = null;
+const pending = new Map<number, (r: { samples: Float32Array; rate: number } | null) => void>();
+let nextId = 1;
+
+const FEMALE_VOICES = ["af_heart", "af_bella", "bf_emma", "af_nicole", "af_sarah", "bf_isabella"];
+const MALE_VOICES = ["am_michael", "bm_george", "am_fenrir", "bm_fable", "am_puck", "bm_lewis"];
+
+export const neuralSupported = typeof Worker !== "undefined" && typeof WebAssembly !== "undefined";
+
+export function loadNeuralVoices() {
+  if (!neuralSupported || neural.status === "loading" || neural.status === "ready") return;
+  neural.status = "loading"; neural.progress = 0; neural.error = ""; emit();
+  worker = new Worker(new URL("./tts.worker.ts", import.meta.url), { type: "module" });
+  worker.onmessage = (e: MessageEvent) => {
+    const m = e.data;
+    if (m.type === "progress") { neural.progress = m.progress; emit(); }
+    else if (m.type === "ready") { neural.status = "ready"; neural.progress = 1; emit(); }
+    else if (m.type === "audio") { pending.get(m.id)?.({ samples: m.samples, rate: m.rate }); pending.delete(m.id); }
+    else if (m.type === "error") {
+      if (m.id !== undefined) { pending.get(m.id)?.(null); pending.delete(m.id); }
+      if (neural.status !== "ready") { neural.status = "error"; neural.error = m.message; emit(); worker?.terminate(); worker = null; }
+    }
+  };
+  worker.onerror = () => { neural.status = "error"; neural.error = "The voice model could not start in this browser."; emit(); };
+  worker.postMessage({ type: "load" });
+}
+
+function generate(text: string, voice: string, speed: number): Promise<{ samples: Float32Array; rate: number } | null> {
+  return new Promise((resolve) => {
+    if (!worker) return resolve(null);
+    const id = nextId++;
+    pending.set(id, resolve);
+    worker.postMessage({ type: "speak", id, text, voice, speed });
+  });
+}
+
+function neuralVoiceFor(p: VoiceProfile): string {
+  if (p.neural) return p.neural;
+  const list = p.gender === "female" ? FEMALE_VOICES : MALE_VOICES;
+  return list[p.seed % list.length];
+}
+
+/** Generates sentence by sentence so the first words play quickly. */
+async function speakNeural(text: string, profile: VoiceProfile, opts: SpeakOptions) {
+  const my = ++session;
+  playCtx ??= new AudioContext();
+  if (playCtx.state === "suspended") await playCtx.resume();
+  const clean = text.replace(/["“”]/g, "").replace(/—/g, ", ");
+  const sentences = clean.match(/[^.!?…]+[.!?…]+["')\]]*|\S[^.!?…]*$/g)?.map((s) => s.trim()).filter(Boolean) ?? [clean];
+  const voice = neuralVoiceFor(profile);
+  const speed = Math.max(0.7, Math.min(1.4, profile.rate * opts.rate));
+  let started = false;
+  let upcoming = generate(sentences[0], voice, speed);
+  for (let i = 0; i < sentences.length; i++) {
+    const clip = await upcoming;
+    if (my !== session) return;
+    if (i + 1 < sentences.length) upcoming = generate(sentences[i + 1], voice, speed);
+    if (!clip) continue;
+    if (!started) { started = true; audio.duck(true); opts.onStart?.(); }
+    await play(clip, opts.volume, my);
+    if (my !== session) return;
+  }
+  audio.duck(false);
+  opts.onEnd?.();
+}
+
+function play(clip: { samples: Float32Array; rate: number }, volume: number, my: number): Promise<void> {
+  return new Promise((resolve) => {
+    if (!playCtx || my !== session) return resolve();
+    const buf = playCtx.createBuffer(1, clip.samples.length, clip.rate);
+    buf.copyToChannel(new Float32Array(clip.samples), 0);
+    const gain = playCtx.createGain();
+    gain.gain.value = volume;
+    source = playCtx.createBufferSource();
+    source.buffer = buf;
+    source.connect(gain).connect(playCtx.destination);
+    source.onended = () => resolve();
+    source.start();
+  });
+}
+
+function stopNeural() {
+  session++;
+  try { source?.stop(); } catch { /* already stopped */ }
+  source = null;
 }
 
 // ── Speech recognition (player's microphone) ──

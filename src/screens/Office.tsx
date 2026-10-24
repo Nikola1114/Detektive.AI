@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Gavel, Map as MapIcon, MessageSquareQuote, Network, Search, TriangleAlert, Users, Flag } from "lucide-react";
+import { ArrowRight, BookOpen, Gavel, Map as MapIcon, MessageSquareQuote, Network, Search, TriangleAlert, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GameLayout } from "../components/GameLayout";
 import { Portrait } from "../components/Portrait";
@@ -7,6 +7,7 @@ import { MoodTag } from "../components/bits";
 import { Button, Modal } from "../components/ui";
 import { useGame } from "../game/GameContext";
 import { NoCase } from "./NoCase";
+import { GiveUpButton } from "../components/CaseHelp";
 
 export function Office() {
   const { state, go, route, mutate, profile } = useGame();
@@ -46,9 +47,9 @@ export function Office() {
           <div className="grid gap-5 lg:grid-cols-3">
             {/* Case file */}
             <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="panel-paper relative overflow-hidden p-6 lg:col-span-2" aria-label="Case file">
-              <div className="absolute -right-6 top-6 rotate-12 border-4 border-blood-500/50 px-4 py-1 font-type text-2xl text-blood-500/50">HOMICIDE</div>
+              <div className="absolute -right-6 top-6 rotate-12 border-4 border-blood-500/50 px-4 py-1 font-type text-2xl text-blood-500/50">{state.stamp.toUpperCase()}</div>
               <div className="font-type text-xs uppercase tracking-widest text-char-500">Blackwood City Police Dept. — Case File</div>
-              <h2 className="mt-1 font-display text-2xl font-bold text-char-900">Victim: {state.victim.name}, {state.victim.age}</h2>
+              <h2 className="mt-1 font-display text-2xl font-bold text-char-900">{state.victim.age ? `Victim: ${state.victim.name}, ${state.victim.age}` : `Stolen: ${state.victim.name}`}</h2>
               <p className="mt-1 max-w-xl font-type text-sm text-char-700">{state.victim.description}</p>
               <p className="mt-4 max-w-2xl font-type text-[0.95rem] leading-relaxed text-char-800">{state.synopsis}</p>
 
@@ -127,9 +128,7 @@ export function Office() {
           </div>
 
           {!closed && (
-            <div className="mt-6 text-right">
-              <button onClick={() => setAbandonOpen(true)} className="inline-flex items-center gap-2 text-xs text-smoke-500 hover:text-blood-400"><Flag size={13} />Abandon case and reveal the solution</button>
-            </div>
+            <div className="mt-6 flex justify-end"><GiveUpButton /></div>
           )}
         </div>
       </div>

@@ -243,7 +243,7 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
   const suspects: SuspectDef[] = people.map((p) => {
     const female = p.gender === "female";
     const portrait: PortraitSpec = {
-      skin: pick(SKIN), hairColor: pick(HAIRC), outfitColor: pick(OUTFITC), age: p.age > 50 ? "older" : p.age < 34 ? "young" : "mid", glasses: rnd() < 0.25,
+      gender: p.gender, skin: pick(SKIN), hairColor: pick(HAIRC), outfitColor: pick(OUTFITC), age: p.age > 50 ? "older" : p.age < 34 ? "young" : "mid", glasses: rnd() < 0.25,
       hair: pick(female ? ["bob", "long", "bun", "wavy"] as const : ["short", "slick", "messy", "receding", "bald"] as const),
       outfit: pick(female ? ["blouse", "dress", "coat", "turtleneck"] as const : ["suit", "jacket", "coat", "sweater", "uniform"] as const),
       beard: !female && rnd() < 0.35 ? pick(["stubble", "full", "moustache"] as const) : undefined, earrings: female && rnd() < 0.5,
@@ -331,6 +331,7 @@ export function buildCase(pool: SettingPool, difficulty: Difficulty, seed: numbe
   return {
     id: `gen-${(seed >>> 0).toString(36)}-${difficulty[0].toLowerCase()}`,
     title, subtitle: `Generated Case ${code}`, setting: pool.city, date: pool.date, difficulty,
+    stamp: crime === "theft" ? "Theft" : crime === "murder" ? "Homicide" : "Missing Person",
     synopsis: crime === "theft"
       ? `${cap(pool.target ?? "A priceless item")} has vanished overnight from ${pool.scene.name}. ${nSus} people had the access — and a reason.`
       : crime === "murder"

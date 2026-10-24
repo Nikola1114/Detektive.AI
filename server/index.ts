@@ -9,7 +9,7 @@ import type { CaseSummary, NoteTag } from "../shared/api.ts";
 import { builtInCases, getCase } from "./cases/registry.ts";
 import { aiInfo } from "./dialogue/ai.ts";
 import {
-  GameError, abandon, accuse, act, addNote, connect, deleteNote, hotspots, inspect, interrogate, refreshUnlocks, saveBoard, travel, updateNote,
+  GameError, abandon, accuse, askForClue, autoDeduce, setMode, act, addNote, connect, deleteNote, hotspots, inspect, interrogate, refreshUnlocks, saveBoard, travel, updateNote,
   type AccusePayload, type Ctx, type TalkInput,
 } from "./engine/engine.ts";
 import { checkAchievements, emptyEvents, profileView } from "./engine/progression.ts";
@@ -35,25 +35,26 @@ function route(method: string, pathPattern: string, handler: Handler, auth = tru
 
 // ───────────── helpers ─────────────
 
-function caseCtx(auth: Auth, caseId: string, create = false): Ctx {
+function caseCtx(auth: Auth, caseId: string, create = false, mode?: "easy" | "normal"): Ctx {
   const def = getCase(caseId);
   if (!def) throw new GameError("Case not found.", 404);
   if (def.generated && !auth.save.generatedCases.includes(def.id)) throw new GameError("Case not found.", 404);
   let p = auth.save.cases[caseId];
   if (!p) {
     if (!create) throw new GameError("Case not started.", 404);
-    p = newCaseProgress(def);
+    p = newCaseProgress(def, mode === "easy" ? "easy" : "normal");
     auth.save.cases[caseId] = p;
   }
   return { save: auth.save, def, p, ev: emptyEvents() };
 }
 
 /** Wraps a mutation: stamps progress, re-checks achievements, saves, returns events + fresh state. */
-async function mutate<T>(auth: Auth, caseId: string, fn: (ctx: Ctx) => T | Promise<T>, create = false) {
-  const ctx = caseCtx(auth, caseId, create);
+async function mutate<T>(auth: Auth, caseId: string, fn: (ctx: Ctx) => T | Promise<T>, create = false, mode?: "easy" | "normal") {
+  const ctx = caseCtx(auth, caseId, create, mode);
   const result = await fn(ctx);
   ctx.p.updatedAt = Date.now();
   refreshUnlocks(ctx);
+  autoDeduce(ctx);
   checkAchievements(ctx.save, ctx.def, ctx.p, ctx.ev);
   persist(auth.hash);
   return { result, events: ctx.ev, state: buildCaseState(ctx.def, ctx.p), profile: profileView(ctx.save) };
@@ -92,12 +93,12 @@ route("DELETE", "/api/profile", (_r, _p, _b, auth) => { deletePlayer(auth!.hash)
 route("GET", "/api/export", (_r, _p, _b, auth) => ({ exportedAt: new Date().toISOString(), save: auth!.save }));
 
 route("GET", "/api/cases", (_r, _p, _b, auth) => summaries(auth!.save));
-route("POST", "/api/cases/:id/start", async (_r, { id }, _b, auth) => (await mutate(auth!, id, () => null, true)));
-route("POST", "/api/cases/:id/reset", async (_r, { id }, _b, auth) => {
+route("POST", "/api/cases/:id/start", async (_r, { id }, body, auth) => (await mutate(auth!, id, () => null, true, body?.mode)));
+route("POST", "/api/cases/:id/reset", async (_r, { id }, body, auth) => {
   const def = getCase(id);
   if (!def) throw new GameError("Case not found.", 404);
   delete auth!.save.cases[id];
-  return mutate(auth!, id, () => null, true);
+  return mutate(auth!, id, () => null, true, body?.mode);
 });
 route("GET", "/api/cases/:id/state", (_r, { id }, _b, auth) => {
   const ctx = caseCtx(auth!, id);
@@ -129,6 +130,8 @@ route("POST", "/api/cases/:id/interrogate/:sid", (_r, { id, sid }, body, auth) =
   return mutate(auth!, id, (ctx) => interrogate(ctx, sid, input));
 });
 route("POST", "/api/cases/:id/accuse", (_r, { id }, body, auth) => mutate(auth!, id, (ctx) => accuse(ctx, body as AccusePayload)));
+route("POST", "/api/cases/:id/clue", (_r, { id }, _b, auth) => mutate(auth!, id, (ctx) => askForClue(ctx)));
+route("POST", "/api/cases/:id/mode", (_r, { id }, body, auth) => mutate(auth!, id, (ctx) => setMode(ctx, body?.mode)));
 route("POST", "/api/cases/:id/abandon", (_r, { id }, _b, auth) => mutate(auth!, id, (ctx) => abandon(ctx)));
 route("GET", "/api/cases/:id/resolution", (_r, { id }, _b, auth) => {
   const ctx = caseCtx(auth!, id);

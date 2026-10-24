@@ -13,8 +13,9 @@ import { InterrogationRoom, bodyLanguage } from "../components/InterrogationRoom
 import { Portrait } from "../components/Portrait";
 import { EvidenceCard } from "../components/bits";
 import { Modal } from "../components/ui";
+import { ClueButton } from "../components/CaseHelp";
 import { useGame } from "../game/GameContext";
-import { listen, micSupported, speak, stopSpeaking, voiceSupported, type Listener } from "../voice";
+import { listen, loadNeuralVoices, micSupported, neuralSupported, speak, stopSpeaking, voiceSupported, type Listener } from "../voice";
 import { NoCase } from "./NoCase";
 
 export function Interrogation() {
@@ -73,8 +74,8 @@ function Room({ suspect }: { suspect: SuspectView }) {
 
   const say = useCallback((line: string) => {
     if (!settings.voices || !voiceSupported) return;
-    speak(line, suspect.voice, { volume: settings.voiceVolume, rate: settings.voiceRate, onStart: () => setSpeaking(true), onEnd: () => setSpeaking(false) });
-  }, [settings.voices, settings.voiceVolume, settings.voiceRate, suspect.voice]);
+    speak(line, suspect.voice, { volume: settings.voiceVolume, rate: settings.voiceRate, engine: settings.voiceEngine, onStart: () => setSpeaking(true), onEnd: () => setSpeaking(false) });
+  }, [settings.voices, settings.voiceVolume, settings.voiceRate, settings.voiceEngine, suspect.voice]);
 
   // Greet the detective when the interview starts.
   useEffect(() => {
@@ -113,7 +114,9 @@ function Room({ suspect }: { suspect: SuspectView }) {
       <section className="order-2 flex flex-col px-5 pb-28 pt-4 sm:px-8 lg:order-1 lg:w-[38%] lg:overflow-y-auto lg:pb-6 lg:pt-6" aria-label="Your questions">
         <div className="mb-4 flex items-center justify-between">
           <button onClick={() => go("interrogate")} className="font-story inline-flex items-center gap-2 text-lg text-smoke-300 hover:text-white"><ArrowLeft size={18} />Leave the room</button>
-          <button onClick={() => setTranscript(true)} className="font-story inline-flex items-center gap-2 text-smoke-400 hover:text-white"><ScrollText size={16} />Transcript</button>
+          <div className="flex items-center gap-4">
+            <button onClick={() => setTranscript(true)} className="font-story inline-flex items-center gap-2 text-smoke-400 hover:text-white"><ScrollText size={16} />Transcript</button>
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
@@ -220,6 +223,17 @@ function Room({ suspect }: { suspect: SuspectView }) {
           </div>
         </div>
 
+        {settings.voices && settings.voiceEngine === "browser" && !settings.voicePromptDismissed && neuralSupported && (
+          <div className="absolute left-3 right-3 top-12 z-10 max-w-sm border-2 border-[#d9d9d9] bg-black/90 p-3 lg:bottom-4 lg:left-4 lg:right-auto lg:top-auto">
+            <p className="font-story text-base text-paper-100">Want suspects to sound like real people?</p>
+            <p className="mt-1 text-xs text-smoke-400">Downloads a realistic voice model once (about 90 MB). Free, and it runs on your computer.</p>
+            <div className="mt-2 flex gap-2">
+              <button onClick={() => { setSettings({ voiceEngine: "neural", voicePromptDismissed: true }); loadNeuralVoices(); notify("info", "Downloading realistic voices — built-in voices are used until it's ready."); }} className="rounded bg-paper-100 px-3 py-1 text-sm font-semibold text-black hover:bg-white">Yes, download</button>
+              <button onClick={() => setSettings({ voicePromptDismissed: true })} className="px-2 py-1 text-sm text-smoke-400 hover:text-white">No thanks</button>
+            </div>
+          </div>
+        )}
+        <ClueButton className="absolute bottom-3 right-3 z-10 !px-3 !py-1.5 lg:bottom-4 lg:right-5" />
         <div className="font-story absolute left-4 top-3 text-sm text-smoke-400 sm:text-base lg:bottom-3 lg:top-auto"><span className="text-paper-100">{suspect.name}</span> · {suspect.profession}</div>
       </section>
 

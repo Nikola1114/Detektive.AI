@@ -8,6 +8,7 @@ import { EvidenceCard } from "../components/bits";
 import { Badge, Button, Modal, SectionTitle } from "../components/ui";
 import { useGame } from "../game/GameContext";
 import { NoCase } from "./NoCase";
+import { GiveUpButton } from "../components/CaseHelp";
 
 const STEPS = ["Culprit", "Motive", "Method", "Sequence", "Evidence", "Review"];
 
@@ -58,7 +59,7 @@ export function Accusation() {
   return (
     <GameLayout active="accuse">
       <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <SectionTitle kicker="District Attorney's office" title="Final Accusation" right={<Badge tone={a.attemptsLeft === 1 ? "red" : "amber"}>{a.attemptsLeft} accusation{a.attemptsLeft === 1 ? "" : "s"} remaining</Badge>} />
+        <SectionTitle kicker="District Attorney's office" title="Final Accusation" right={<div className="flex items-center gap-4"><GiveUpButton /><Badge tone={state.mode === "easy" ? "green" : a.attemptsLeft === 1 ? "red" : "amber"}>{state.mode === "easy" ? "Easy mode · unlimited tries" : `${a.attemptsLeft} accusation${a.attemptsLeft === 1 ? "" : "s"} remaining`}</Badge></div>} />
         <p className="-mt-2 mb-5 max-w-2xl text-sm text-smoke-300">Build your case for the DA: who did it, why, how, and in what order — supported by at least {a.minEvidence} pieces of evidence. A wrong accusation costs you; three and the case is taken off your desk.</p>
 
         <ol className="mb-6 flex flex-wrap gap-2" aria-label="Steps">

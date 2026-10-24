@@ -13,6 +13,7 @@ try {
   await page.getByText("Intermediate", { exact: true }).click();
   await page.screenshot({ path: `${OUT}/g1-generator.png` });
   await page.getByRole("button", { name: /Generate case/ }).click();
+  await page.getByRole("button", { name: /^Easy/ }).click({ timeout: 30000 });
   await page.getByRole("dialog").waitFor({ timeout: 30000 });
   await page.waitForTimeout(2500);
   await page.screenshot({ path: `${OUT}/g2-briefing.png` });
@@ -40,6 +41,17 @@ try {
   await page.goto(`${BASE}/#/map`);
   await page.waitForTimeout(600);
   await page.screenshot({ path: `${OUT}/g5-map.png` });
+  // Ask for a clue, then give up and see the solution.
+  await page.goto(`${BASE}/#/office`);
+  await page.getByRole("button", { name: /Ask for a clue/ }).click();
+  await page.getByText("Sgt. Kane", { exact: true }).waitFor();
+  await page.screenshot({ path: `${OUT}/g6-clue.png` });
+  await page.getByRole("button", { name: "Got it" }).click();
+  await page.getByRole("button", { name: /I give up/ }).first().click();
+  await page.getByRole("button", { name: /show me the solution/ }).click();
+  await page.getByRole("button", { name: /Skip/ }).click({ timeout: 15000 });
+  await page.getByText("Case Abandoned").waitFor();
+  await page.screenshot({ path: `${OUT}/g7-gave-up.png` });
   console.log(errors.length ? "Console errors:\n" + errors.join("\n") : "✓ Generated case playable with no console errors");
   if (errors.length) process.exitCode = 1;
 } catch (e) { console.error(e); await page.screenshot({ path: `${OUT}/g-FAILURE.png` }); process.exitCode = 1; }

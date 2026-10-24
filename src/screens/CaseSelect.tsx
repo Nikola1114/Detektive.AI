@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CaseSummary } from "../../shared/api";
 import { api } from "../api";
 import { Badge, Button, SectionTitle } from "../components/ui";
+import { ModePicker } from "../components/CaseHelp";
 import { useGame } from "../game/GameContext";
 
 const SETTINGS = [
@@ -28,9 +29,12 @@ export function CaseSelect() {
   const [difficulty, setDifficulty] = useState("Beginner");
   const [generating, setGenerating] = useState(false);
 
-  const open = async (c: CaseSummary) => {
-    if (await startCase(c.id)) go(c.status === "new" ? "office?briefing" : c.status === "active" ? "office" : "resolution");
+  const [picking, setPicking] = useState<CaseSummary | null>(null);
+  const begin = async (c: CaseSummary, mode?: "easy" | "normal") => {
+    setPicking(null);
+    if (await startCase(c.id, { mode })) go(c.status === "new" ? "office?briefing" : c.status === "active" ? "office" : "resolution");
   };
+  const open = (c: CaseSummary) => (c.status === "new" ? setPicking(c) : void begin(c));
 
   const generate = async () => {
     setGenerating(true);
@@ -38,7 +42,7 @@ export function CaseSelect() {
       const r = await api<{ caseId: string }>("POST", "/api/generate", { setting, difficulty });
       await refreshCases();
       notify("unlock", "New case file generated");
-      if (await startCase(r.caseId)) go("office?briefing");
+      setPicking({ id: r.caseId, status: "new" } as CaseSummary);
     } catch (e) {
       notify("error", (e as Error).message);
     } finally { setGenerating(false); }
@@ -70,6 +74,7 @@ export function CaseSelect() {
         ))}
       </div>
 
+      <ModePicker open={Boolean(picking)} onClose={() => setPicking(null)} onPick={(m) => picking && void begin(picking, m)} />
       <section className="panel mt-8 p-6" aria-labelledby="gen-title">
         <div className="flex flex-wrap items-center gap-3">
           <Wand2 className="text-amber-400" />

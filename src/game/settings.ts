@@ -10,6 +10,8 @@ export interface Settings {
   grain: boolean;
   rain: boolean;
   voices: boolean; // suspects speak their lines aloud
+  voiceEngine: "browser" | "neural"; // built-in voices, or the realistic downloaded model
+  voicePromptDismissed: boolean;
   voiceVolume: number;
   voiceRate: number;
   micAutoSend: boolean; // send spoken questions as soon as you stop talking
@@ -19,7 +21,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sound: false, // audio is off until the player turns it on
   ambient: 0.6, music: 0.4, sfx: 0.7,
   motion: "system", textLarge: false, highContrast: false, grain: true, rain: true,
-  voices: true, voiceVolume: 1, voiceRate: 1, micAutoSend: true,
+  voices: true, voiceEngine: "browser", voicePromptDismissed: false, voiceVolume: 1, voiceRate: 1, micAutoSend: true,
 };
 
 const KEY = "dai.settings";

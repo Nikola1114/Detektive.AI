@@ -45,6 +45,10 @@ export interface CaseProgress {
   notes: NotebookNote[];
   accusations: AccusationEntry[];
   verdict?: Verdict;
+  /** Easy mode: no hidden clues, deductions make themselves, suspects crack easily, unlimited accusations. */
+  mode?: "easy" | "normal";
+  hintsUsed?: number;
+  lastClue?: string;
 }
 
 export interface PlayerStats {
@@ -81,7 +85,7 @@ export function newPlayer(id: string): PlayerSave {
   };
 }
 
-export function newCaseProgress(def: CaseDef): CaseProgress {
+export function newCaseProgress(def: CaseDef, mode: "easy" | "normal" = "normal"): CaseProgress {
   const now = Date.now();
   const suspects: Record<string, SuspectProgress> = {};
   for (const s of def.suspects) {
@@ -108,6 +112,8 @@ export function newCaseProgress(def: CaseDef): CaseProgress {
     board: { items: [], connections: [], notes: [] },
     notes: [],
     accusations: [],
+    mode,
+    hintsUsed: 0,
   };
 }
 
@@ -131,8 +137,10 @@ export function checkTalk(p: CaseProgress, s: SuspectProgress, c: TalkCond | und
   if (!check(p, c)) return false;
   if (c.revealed && !c.revealed.every((r) => s.revealed.includes(r))) return false;
   if (c.notRevealed && c.notRevealed.some((r) => s.revealed.includes(r))) return false;
-  if (c.minTrust !== undefined && s.trust < c.minTrust) return false;
-  if (c.minStress !== undefined && s.stress < c.minStress) return false;
+  // In easy mode suspects open up without needing to be pressured or won over first.
+  const easy = p.mode === "easy";
+  if (!easy && c.minTrust !== undefined && s.trust < c.minTrust) return false;
+  if (!easy && c.minStress !== undefined && s.stress < c.minStress) return false;
   return true;
 }
 

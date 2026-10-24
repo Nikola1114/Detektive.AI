@@ -28,7 +28,7 @@ interface Game {
   toasts: Toast[];
   go: (path: string) => void;
   setSettings: (patch: Partial<Settings>) => void;
-  startCase: (id: string, opts?: { reset?: boolean }) => Promise<boolean>;
+  startCase: (id: string, opts?: { reset?: boolean; mode?: "easy" | "normal" }) => Promise<boolean>;
   mutate: <R = unknown>(method: string, path: string, body?: unknown) => Promise<R | undefined>;
   refreshCases: () => Promise<void>;
   setProfile: (p: Profile) => void;
@@ -120,10 +120,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const startCase = useCallback(async (id: string, opts?: { reset?: boolean }) => {
+  const startCase = useCallback(async (id: string, opts?: { reset?: boolean; mode?: "easy" | "normal" }) => {
     setBusy(true);
     try {
-      const m = await api<Mutation>("POST", `/api/cases/${id}/${opts?.reset ? "reset" : "start"}`);
+      const m = await api<Mutation>("POST", `/api/cases/${id}/${opts?.reset ? "reset" : "start"}`, { mode: opts?.mode });
       setState(m.state);
       setProfile(m.profile);
       setCaseId(id);

@@ -148,6 +148,8 @@ export interface CaseDef {
   date: string;
   difficulty: "Beginner" | "Intermediate" | "Expert";
   synopsis: string;
+  /** Stamp on the case file, e.g. "Homicide", "Theft". */
+  stamp?: string;
   briefing: string[];
   victim: { name: string; age: number; description: string };
   startLocations: string[];

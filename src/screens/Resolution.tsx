@@ -73,7 +73,7 @@ export function Resolution() {
               ["Deductions", `${res.stats.deductions}/${res.stats.deductionTotal}`],
               ["Contradictions", `${res.stats.contradictions}`],
               ["Accusations", `${res.stats.accusations}`],
-              ["Time on case", `${res.stats.minutes} min`],
+              ["Clues asked for", `${res.stats.hints}${res.stats.mode === "easy" ? " · Easy" : ""}`],
             ].map(([k, v]) => (
               <div key={k} className="panel p-3 text-center"><div className="font-display text-2xl font-bold text-paper-100">{v}</div><div className="text-[0.65rem] uppercase tracking-wider text-smoke-400">{k}</div></div>
             ))}

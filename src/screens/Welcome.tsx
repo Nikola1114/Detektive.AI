@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Briefcase, Play, RotateCcw, Settings, Volume2, VolumeX } from "lucide-react";
+import { useState } from "react";
+import { ModePicker } from "../components/CaseHelp";
 import { useGame } from "../game/GameContext";
 
 export function Welcome() {
@@ -7,10 +9,14 @@ export function Welcome() {
   const canContinue = Boolean(caseId && state);
   const case1 = cases.find((c) => c.id === "case-001");
 
-  const start = async () => {
-    // Start Investigation opens Case 001 (resuming if already underway).
-    if (await startCase("case-001")) go(case1?.status === "new" || !case1 ? "office?briefing" : "office");
+  const [picking, setPicking] = useState(false);
+  const isNew = case1?.status === "new" || !case1;
+  const begin = async (mode?: "easy" | "normal") => {
+    setPicking(false);
+    if (await startCase("case-001", { mode })) go(isNew ? "office?briefing" : "office");
   };
+  // Start Investigation opens Case 001: a new case first asks for a difficulty.
+  const start = () => (isNew ? setPicking(true) : void begin());
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden">
@@ -60,6 +66,7 @@ export function Welcome() {
         </motion.div>
       </div>
 
+      <ModePicker open={picking} onClose={() => setPicking(false)} onPick={(m) => void begin(m)} />
       <div className="relative z-10 flex items-center justify-between px-6 pb-5 text-xs text-smoke-400">
         <span>A work of fiction. All characters and events are invented.</span>
         <button onClick={() => setSettings({ sound: !settings.sound })} className="flex items-center gap-2 rounded px-2 py-1 hover:text-smoke-100" aria-pressed={settings.sound}>

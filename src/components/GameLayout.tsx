@@ -3,6 +3,7 @@ import { BookOpen, Briefcase, Gavel, Map, Network, Settings, Users, UserRound, H
 import type { ReactNode } from "react";
 import { useGame } from "../game/GameContext";
 import { ClueButton, GiveUpButton } from "./CaseHelp";
+import { Logo } from "./Logo";
 import { StoryBar } from "./Story";
 
 const NAV = [
@@ -19,9 +20,8 @@ export function GameLayout({ children, active }: { children: ReactNode; active: 
   return (
     <div className="flex min-h-full">
       <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-white/5 bg-char-900/80 backdrop-blur md:flex">
-        <button onClick={() => go("welcome")} className="flex items-center gap-2 px-5 pb-4 pt-5 text-left">
-          <span className="font-display text-xl font-extrabold tracking-[0.1em] text-paper-100">BLACKWOOD</span>
-          <span className="rounded bg-amber-500 px-1 font-display text-xs font-extrabold text-char-900">FILES</span>
+        <button onClick={() => go("welcome")} className="px-4 pb-4 pt-5 text-left" aria-label="Blackwood Files — title screen">
+          <Logo size={38} />
         </button>
         {state && (
           <div className="mx-4 mb-4 rounded-lg border border-white/5 bg-white/[0.02] p-3">

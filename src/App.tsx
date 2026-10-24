@@ -2,6 +2,7 @@ import { MotionConfig } from "framer-motion";
 import { useEffect } from "react";
 import { audio } from "./audio";
 import { loadNeuralVoices } from "./voice";
+import { LogoMark } from "./components/Logo";
 import { StoryDirector } from "./components/Story";
 import { Toasts } from "./components/Toasts";
 import { useGame } from "./game/GameContext";
@@ -36,7 +37,7 @@ export function App() {
   }, [route.name]);
 
   if (!ready) {
-    return <div className="flex min-h-screen items-center justify-center"><div className="font-display text-2xl tracking-[0.3em] text-smoke-400 animate-pulse">BLACKWOOD FILES</div></div>;
+    return <div className="flex min-h-screen flex-col items-center justify-center gap-4"><LogoMark size={88} className="animate-pulse" /><div className="font-display text-2xl tracking-[0.3em] text-smoke-400">BLACKWOOD FILES</div></div>;
   }
   if (fatal) {
     return (

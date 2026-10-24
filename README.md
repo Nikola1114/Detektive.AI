@@ -1,3 +1,5 @@
+<p align="center"><img src="public/logo.png" alt="Blackwood Files" width="560"></p>
+
 # Blackwood Files
 
 *Every Secret Leaves a Trace.*

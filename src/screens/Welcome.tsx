@@ -3,6 +3,7 @@ import { Briefcase, Play, RotateCcw, Settings, Volume2, VolumeX } from "lucide-r
 import { useState } from "react";
 import type { GameMode } from "../../shared/api";
 import { ModePicker } from "../components/CaseHelp";
+import { LogoMark } from "../components/Logo";
 import { useGame } from "../game/GameContext";
 
 export function Welcome() {
@@ -45,6 +46,7 @@ export function Welcome() {
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2 }}>
+          <LogoMark size={132} className="mx-auto mb-5 drop-shadow-[0_0_40px_rgba(231,180,90,0.25)]" />
           <div className="label-caps mb-4 !tracking-[0.5em] !text-amber-400/80">A detective noir</div>
           <h1 className="font-display text-6xl font-extrabold tracking-[0.12em] text-paper-100 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)] sm:text-8xl">
             BLACKWOOD <span className="text-amber-400">FILES</span>

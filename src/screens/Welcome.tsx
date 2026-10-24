@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Briefcase, Play, RotateCcw, Settings, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
+import type { GameMode } from "../../shared/api";
 import { ModePicker } from "../components/CaseHelp";
 import { useGame } from "../game/GameContext";
 
@@ -11,9 +12,10 @@ export function Welcome() {
 
   const [picking, setPicking] = useState(false);
   const isNew = case1?.status === "new" || !case1;
-  const begin = async (mode?: "easy" | "normal") => {
+  const begin = async (mode?: GameMode) => {
     setPicking(false);
-    if (await startCase("case-001", { mode })) go(isNew ? "office?briefing" : "office");
+    // Story mode opens with its own film instead of the written briefing.
+    if (await startCase("case-001", { mode })) go(isNew && mode !== "story" ? "office?briefing" : "office");
   };
   // Start Investigation opens Case 001: a new case first asks for a difficulty.
   const start = () => (isNew ? setPicking(true) : void begin());

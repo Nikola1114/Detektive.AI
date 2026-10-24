@@ -151,7 +151,7 @@ class AudioEngine {
     if (this.musicTimer !== null) { clearInterval(this.musicTimer); this.musicTimer = null; }
   }
 
-  sfx(kind: "discover" | "deduction" | "contradiction" | "unlock" | "click" | "error" | "achievement") {
+  sfx(kind: "discover" | "deduction" | "contradiction" | "unlock" | "click" | "error" | "achievement" | "sting" | "thunder" | "projector") {
     if (!this.ctx || !this.enabled) return;
     const ctx = this.ctx;
     const t = ctx.currentTime;
@@ -169,7 +169,25 @@ class AudioEngine {
       case "contradiction": tone(110, 0, 1.4, 0.35, "sawtooth"); tone(116.5, 0, 1.4, 0.25, "sawtooth"); tone(880, 0.1, 0.8, 0.1); break;
       case "achievement": [523, 659, 784, 1047].forEach((f, k) => tone(f, k * 0.1, 1.2, 0.15)); break;
       case "error": tone(160, 0, 0.25, 0.2, "square"); break;
+      // Cinematic cues for story cutscenes.
+      case "sting": tone(55, 0, 4, 0.45); tone(82.4, 0, 3.5, 0.25, "triangle"); tone(220, 0.04, 2.6, 0.05, "sawtooth"); tone(207.7, 0.04, 2.6, 0.04, "sawtooth"); break;
+      case "thunder": this.burst(2.8, 0.7, 160); break;
+      case "projector": for (let k = 0; k < 10; k++) tone(70 + (k % 2) * 6, k * 0.08, 0.05, 0.05, "square"); break;
     }
+  }
+
+  /** A filtered noise burst (thunder, rumble). */
+  private burst(dur: number, vol: number, cutoff: number) {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const t = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noiseBuffer(ctx, true);
+    const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = cutoff;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(this.sfxBus);
+    src.start(t); src.stop(t + dur + 0.1);
   }
 }
 

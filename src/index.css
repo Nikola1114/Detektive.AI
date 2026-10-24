@@ -115,3 +115,18 @@ input[type="range"] { accent-color: #e7b45a; }
 @keyframes ecg { to { transform: translateX(-50%); } }
 .led { font-family: "Special Elite", monospace; color: #ff3b30; text-shadow: 0 0 8px rgba(255, 59, 48, 0.7); letter-spacing: 0.12em; }
 html.motion-off .ir-rec, html.motion-off .ir-breathe, html.motion-off .ecg { animation: none !important; }
+
+/* Story cutscenes: projector flicker, scratches, lightning */
+.film-flicker { animation: film-flicker 0.18s steps(2) infinite; }
+@keyframes film-flicker { 0% { opacity: 0.04; } 50% { opacity: 0.09; } 100% { opacity: 0.02; } }
+.film-scratch {
+  position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, 0.25); pointer-events: none;
+  animation: film-scratch 3.7s steps(1) infinite;
+}
+.film-scratch.b { animation-duration: 5.3s; animation-delay: -2s; background: rgba(0, 0, 0, 0.5); }
+@keyframes film-scratch { 0% { left: 12%; opacity: 1; } 8% { opacity: 0; } 31% { left: 71%; opacity: 0.8; } 36% { opacity: 0; } 62% { left: 44%; opacity: 0.6; } 66% { opacity: 0; } }
+.film-lightning { animation: film-lightning 9s linear infinite; }
+@keyframes film-lightning { 0%, 61%, 63.5%, 65%, 100% { opacity: 0; } 62% { opacity: 0.55; } 64% { opacity: 0.3; } }
+.film-window { animation: film-window 4s ease-in-out infinite alternate; }
+@keyframes film-window { to { opacity: 0.55; } }
+html.motion-off .film-flicker, html.motion-off .film-scratch, html.motion-off .film-lightning { animation: none !important; opacity: 0 !important; }

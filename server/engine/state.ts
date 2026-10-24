@@ -1,5 +1,5 @@
 /** Persistent per-player state and helpers for evaluating case conditions. */
-import type { BoardState, ChatMessage, Mood, NotebookNote, Verdict } from "../../shared/api.ts";
+import type { BoardState, ChatMessage, GameMode, Mood, NotebookNote, Verdict } from "../../shared/api.ts";
 import type { CaseDef, Cond, TalkCond } from "../cases/types.ts";
 
 export interface SuspectProgress {
@@ -45,8 +45,8 @@ export interface CaseProgress {
   notes: NotebookNote[];
   accusations: AccusationEntry[];
   verdict?: Verdict;
-  /** Easy mode: no hidden clues, deductions make themselves, suspects crack easily, unlimited accusations. */
-  mode?: "easy" | "normal";
+  /** Easy and story mode: no hidden clues, deductions make themselves, suspects crack easily, unlimited accusations. */
+  mode?: GameMode;
   hintsUsed?: number;
   lastClue?: string;
 }
@@ -85,7 +85,7 @@ export function newPlayer(id: string): PlayerSave {
   };
 }
 
-export function newCaseProgress(def: CaseDef, mode: "easy" | "normal" = "normal"): CaseProgress {
+export function newCaseProgress(def: CaseDef, mode: GameMode = "normal"): CaseProgress {
   const now = Date.now();
   const suspects: Record<string, SuspectProgress> = {};
   for (const s of def.suspects) {
@@ -129,6 +129,9 @@ export function check(p: CaseProgress, c: Cond | undefined): boolean {
   if (c.anyDeductions && !c.anyDeductions.some((d) => d in p.deductions)) return false;
   if (c.flags && !c.flags.every((f) => p.flags.includes(f))) return false;
   if (c.notFlags && c.notFlags.some((f) => p.flags.includes(f))) return false;
+  if (c.interviewed && !c.interviewed.every((s) => p.suspects[s]?.interviewed)) return false;
+  if (c.visited && !c.visited.every((l) => p.visited.includes(l))) return false;
+  if (c.minDeductions !== undefined && Object.keys(p.deductions).length < c.minDeductions) return false;
   return true;
 }
 
@@ -138,10 +141,15 @@ export function checkTalk(p: CaseProgress, s: SuspectProgress, c: TalkCond | und
   if (c.revealed && !c.revealed.every((r) => s.revealed.includes(r))) return false;
   if (c.notRevealed && c.notRevealed.some((r) => s.revealed.includes(r))) return false;
   // In easy mode suspects open up without needing to be pressured or won over first.
-  const easy = p.mode === "easy";
+  const easy = isEasy(p);
   if (!easy && c.minTrust !== undefined && s.trust < c.minTrust) return false;
   if (!easy && c.minStress !== undefined && s.stress < c.minStress) return false;
   return true;
+}
+
+/** Story mode plays by the relaxed easy-mode rules. */
+export function isEasy(p: CaseProgress): boolean {
+  return p.mode === "easy" || p.mode === "story";
 }
 
 export const clamp = (n: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n));

@@ -3,13 +3,14 @@
  * unlocks, experience, auto-notes and achievements stay consistent.
  */
 import type {
-  AccuseResult, BoardState, ConnectResult, GameEvents, HotspotView, InspectResult, InterrogateResult, Mood, NoteTag, Verdict,
+  AccuseResult, BoardState, GameMode, ConnectResult, GameEvents, HotspotView, InspectResult, InterrogateResult, Mood, NoteTag, Verdict,
 } from "../../shared/api.ts";
 import type { CaseDef, DeductionDef, EvidenceDef, ResponseNode, SuspectDef, TopicDef } from "../cases/types.ts";
 import { availableTopics, denial, detectIntent, findEvidenceMention, goodbye, pickNode, pressed, type Intent } from "../dialogue/authored.ts";
 import { voiceTurn } from "../dialogue/ai.ts";
 import { XP, checkAchievements, grantXp, unlockAchievement } from "./progression.ts";
-import { check, clamp, has, uid, type CaseProgress, type PlayerSave, type SuspectProgress } from "./state.ts";
+import { storyFocus } from "./story.ts";
+import { check, clamp, has, isEasy, uid, type CaseProgress, type PlayerSave, type SuspectProgress } from "./state.ts";
 
 export class GameError extends Error {
   status: number;
@@ -110,7 +111,7 @@ export function hotspots(def: CaseDef, p: CaseProgress, locationId: string): Hot
     .filter((h) => check(p, h.requires))
     .map((h) => ({
       id: h.id, label: h.label, x: h.x, y: h.y, w: h.w, h: h.h, prop: h.prop,
-      subtle: Boolean(h.subtle) && !p.inspected.includes(h.id) && p.mode !== "easy",
+      subtle: Boolean(h.subtle) && !p.inspected.includes(h.id) && !isEasy(p),
       inspected: p.inspected.includes(h.id),
       resolved: h.evidence ? has(p, h.evidence) : p.inspected.includes(h.id),
     }));
@@ -442,7 +443,7 @@ export function accuse(ctx: Ctx, a: AccusePayload): AccuseResult {
   const sequenceOk = a.sequence === sol.sequence;
   const name = def.suspects.find((s) => s.id === a.suspectId)!.name;
 
-  const easy = p.mode === "easy";
+  const easy = isEasy(p);
   let verdict: Verdict;
   if (easy ? relevant.length < 1 && keyCount < 1 : keyCount < 2 || (suspectOk && (relevant.length < 2 || categories.length < 2))) verdict = "insufficient";
   else if (!suspectOk) verdict = "incorrect";
@@ -536,7 +537,7 @@ export function abandon(ctx: Ctx) {
 
 /** Easy mode: any deduction whose evidence has been found is made automatically. */
 export function autoDeduce(ctx: Ctx) {
-  if (ctx.p.mode !== "easy" || ctx.p.status !== "active") return;
+  if (!isEasy(ctx.p) || ctx.p.status !== "active") return;
   for (let changed = true; changed;) {
     changed = false;
     for (const d of ctx.def.deductions) {
@@ -547,9 +548,9 @@ export function autoDeduce(ctx: Ctx) {
   }
 }
 
-export function setMode(ctx: Ctx, mode: "easy" | "normal") {
+export function setMode(ctx: Ctx, mode: GameMode) {
   requireActive(ctx);
-  ctx.p.mode = mode === "easy" ? "easy" : "normal";
+  ctx.p.mode = mode === "easy" || mode === "story" ? mode : "normal";
   autoDeduce(ctx);
 }
 
@@ -560,6 +561,32 @@ function findClue(ctx: Ctx): Clue {
   const { def, p } = ctx;
   const first = (n: string) => n.split(" ")[0];
 
+  // 0. Story mode: point at what the current chapter still needs.
+  const todo = storyFocus(def, p);
+  const focus = new Set(todo.evidence);
+  const talkTo = def.suspects.find((s) => todo.interview.includes(s.id));
+  if (talkTo) return { target: `talk:${talkTo.id}`, vague: `You haven't heard ${first(talkTo.name)}'s side yet.`, specific: `Go to Interrogation and question ${talkTo.name}.` };
+  const goTo = def.locations.find((l) => todo.visit.includes(l.id) && p.unlocked.includes(l.id));
+  if (goTo) return { target: `go:${goTo.id}`, vague: "There's a place on the map you haven't been yet.", specific: `Open the map and travel to ${goTo.name}.` };
+  if (focus.size) {
+    for (const loc of def.locations) {
+      if (!p.unlocked.includes(loc.id)) continue;
+      const h = loc.hotspots.find((x) => x.evidence && focus.has(x.evidence) && check(p, x.requires));
+      if (h) return { target: `loc:${h.id}`, vague: `The next piece of this chapter is at ${loc.name}.`, specific: `Go to ${loc.name} and examine the ${h.label.charAt(0).toLowerCase() + h.label.slice(1)}.` };
+    }
+    for (const s of def.suspects) {
+      const sp = p.suspects[s.id];
+      for (const t of availableTopics(s, p)) {
+        const pick = pickNode(t.nodes, p, sp);
+        if (pick?.node.grants?.some((g) => focus.has(g))) return { target: `topic:${s.id}:${t.id}`, vague: `${s.name} can help you with this chapter.`, specific: `Ask ${s.name}: ‘${t.label}’` };
+      }
+      for (const id of Object.keys(p.discovered)) {
+        const pick = s.reactions[id] && pickNode(s.reactions[id], p, sp);
+        if (pick && pick.node.grants?.some((g) => focus.has(g))) return { target: `ev:${s.id}:${id}`, vague: `Something you've found could make ${first(s.name)} talk.`, specific: `Show ${s.name} the ${ev(def, id)!.title}.` };
+      }
+    }
+  }
+
   // 1. Evidence still lying around in places you can reach (current location first).
   const locs = [...def.locations].sort((a, b) => Number(b.id === p.currentLocation) - Number(a.id === p.currentLocation));
   for (const loc of locs) {
@@ -568,7 +595,7 @@ function findClue(ctx: Ctx): Clue {
     if (h) return {
       target: `loc:${h.id}`,
       vague: `There's still something to find at ${loc.name}.`,
-      specific: `Go to ${loc.name} and examine the ${h.label.charAt(0).toLowerCase() + h.label.slice(1)}${h.subtle && p.mode !== "easy" ? " — switch on Search closely to spot it" : ""}.`,
+      specific: `Go to ${loc.name} and examine the ${h.label.charAt(0).toLowerCase() + h.label.slice(1)}${h.subtle && !isEasy(p) ? " — switch on Search closely to spot it" : ""}.`,
     };
   }
 
@@ -628,7 +655,7 @@ export function askForClue(ctx: Ctx): { text: string; specific: boolean } {
   requireActive(ctx);
   const c = findClue(ctx);
   // Asking twice about the same thing (or playing in easy mode) gets the precise version.
-  const specific = ctx.p.mode === "easy" || ctx.p.lastClue === c.target;
+  const specific = isEasy(ctx.p) || ctx.p.lastClue === c.target;
   ctx.p.lastClue = c.target;
   ctx.p.hintsUsed = (ctx.p.hintsUsed ?? 0) + 1;
   return { text: specific ? c.specific : `${c.vague} (Ask again for a more exact clue.)`, specific };

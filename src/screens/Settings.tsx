@@ -29,10 +29,11 @@ export function Settings() {
         {state && state.status === "active" && (
           <Section title="Difficulty (current case)">
             <div className="flex flex-wrap items-center justify-between gap-3 py-2">
-              <div><div className="text-sm text-paper-100">{state.mode === "easy" ? "Easy" : "Detective"}</div><div className="text-xs text-smoke-400">Easy shows every clue, connects evidence for you, and allows unlimited accusations.</div></div>
+              <div><div className="text-sm text-paper-100">{{ easy: "Easy", story: "Story", normal: "Detective" }[state.mode]}</div><div className="text-xs text-smoke-400">Story plays the case in chapters with film scenes. Easy and Story show every clue, connect evidence for you, and allow unlimited accusations.</div></div>
               <div className="flex gap-1" role="radiogroup" aria-label="Difficulty">
-                <Button size="sm" role="radio" aria-checked={state.mode === "easy"} variant={state.mode === "easy" ? "primary" : "ghost"} onClick={() => mutate("POST", "/mode", { mode: "easy" })}>Easy</Button>
-                <Button size="sm" role="radio" aria-checked={state.mode !== "easy"} variant={state.mode !== "easy" ? "primary" : "ghost"} onClick={() => mutate("POST", "/mode", { mode: "normal" })}>Detective</Button>
+                {(["story", "easy", "normal"] as const).map((m) => (
+                  <Button key={m} size="sm" role="radio" aria-checked={state.mode === m} variant={state.mode === m ? "primary" : "ghost"} onClick={() => mutate("POST", "/mode", { mode: m })}>{{ easy: "Easy", story: "Story", normal: "Detective" }[m]}</Button>
+                ))}
               </div>
             </div>
           </Section>

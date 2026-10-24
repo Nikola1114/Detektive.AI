@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { InterrogateResult, SuspectView } from "../../shared/api";
 import { audio } from "../audio";
 import { InterrogationRoom, bodyLanguage } from "../components/InterrogationRoom";
+import { StoryBar } from "../components/Story";
 import { Portrait } from "../components/Portrait";
 import { EvidenceCard } from "../components/bits";
 import { Modal } from "../components/ui";
@@ -151,6 +152,7 @@ function Room({ suspect }: { suspect: SuspectView }) {
               </li>
             </ul>
 
+            <StoryBar compact className="mt-4" />
             <form className="mt-4 lg:sticky lg:bottom-0" onSubmit={(e) => { e.preventDefault(); if (text.trim()) { void send({ text }); setText(""); } }}>
               <div className="sketch-box flex items-center gap-2 bg-black p-2">
                 <label htmlFor="ask" className="sr-only">Ask your own question</label>

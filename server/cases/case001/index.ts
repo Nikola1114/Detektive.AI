@@ -20,6 +20,7 @@ import { marcus } from "./suspects/marcus.ts";
 import { sofia } from "./suspects/sofia.ts";
 import { adrian } from "./suspects/adrian.ts";
 import { oliver } from "./suspects/oliver.ts";
+import { story } from "./story.ts";
 
 export const case001: CaseDef = {
   id: "case-001",
@@ -74,15 +75,15 @@ export const case001: CaseDef = {
       motive: ["laptop", "dossier", "patent", "brother_photo", "T_OLIVER_LANTERN", "expose", "reporter_notebook"],
     },
     scenes: [
-      { heading: "The Last Light", text: "Three years before Daniel Mercer died, a young engineer named Thomas Kessler wrote the algorithm that would make Lumen Dynamics famous. Mercer put his own name on the patent, fired Kessler when he objected, and cast the moment in crystal: a lighthouse award engraved THE LIGHT THAT LEADS. In 2024 Thomas Kessler took his own life." },
-      { heading: "Lantern", text: "Four months later his half-sister, Sofia Bennett, took a job as Mercer's assistant under her father's surname. For almost two years she organised his life — and, under the codename LANTERN, fed journalist Oliver Hayes the evidence of his fraud and his theft." },
-      { heading: "He Knows", time: "21:12", text: "On 13 November Mercer's private investigator delivered the truth. The next evening, Mercer texted her: 'I know about Lantern. I know who your brother was.' He would go to the police at nine. At 21:20 she warned Hayes: 'He knows. I'll fix it.'" },
-      { heading: "The First Visitor", time: "22:08", text: "But Mercer had another appointment first. Marcus Reed, summoned over $4.2 million stolen through Halvorsen Consulting, returned by the garage. Around 22:17 he seized Mercer's wrists; the watch shattered on the desk edge and Reed's cufflink tore loose. At 22:21 he left Mercer alive and furious — and the watch frozen at a time that would mislead everyone." },
-      { heading: "A Manufactured Alibi", time: "22:19", text: "In Carver Street, Sofia plugged a mouse-jiggler into her work computer to keep her VPN session 'active' and booked a cab to Dock Street. Behind the Tower, at 22:38, she let herself in with the spare keycard she would later claim to have lost." },
-      { heading: "Eleven Minutes", time: "22:41", text: "At the security desk, nobody was watching: Adrian Cole had slipped out to pay a bookie at the Drowned Anchor. From her phone, Sofia used the Vigil maintenance code emailed to her own inbox and switched the internal cameras off. She already intended not to be seen." },
-      { heading: "The Light That Leads", time: "22:44", text: "Mercer was still at his keyboard at 22:43. At 22:44 her card opened his door. He did not plead; he sneered. He called her brother a mediocrity who 'couldn't handle losing'. She took the crystal lighthouse — Thomas's work, with Daniel's name on it — from the shelf and struck him once on the left temple." },
-      { heading: "The Locked Room", time: "22:51", text: "She wiped the award with her silk scarf and set it back, a few centimetres from its outline in the dust. She took his phone, because it held their messages, and switched it off. She pulled the door shut — it locked itself — and took service stairwell B, whose cameras end at the 40th floor. She was on Dock Street at 22:57, a small hooded figure in the rain." },
-      { heading: "The Truth Comes Out", text: "Every other suspect lied that night: Evelyn to hide an offshore account, Marcus to hide his theft and his fight, Adrian to hide his debts, Oliver to protect his source. But only one person's lies were built to hide a killing. Sofia Bennett was charged with the murder of Daniel Mercer." },
+      { heading: "The Last Light", visual: "tower", camera: "push", text: "Three years before Daniel Mercer died, a young engineer named Thomas Kessler wrote the algorithm that would make Lumen Dynamics famous. Mercer put his own name on the patent, fired Kessler when he objected, and cast the moment in crystal: a lighthouse award engraved THE LIGHT THAT LEADS. In 2024 Thomas Kessler took his own life." },
+      { heading: "Lantern", visual: "scene:newsroom", camera: "pan-left", text: "Four months later his half-sister, Sofia Bennett, took a job as Mercer's assistant under her father's surname. For almost two years she organised his life — and, under the codename LANTERN, fed journalist Oliver Hayes the evidence of his fraud and his theft." },
+      { heading: "He Knows", visual: "scene:penthouse", camera: "push", time: "21:12", text: "On 13 November Mercer's private investigator delivered the truth. The next evening, Mercer texted her: 'I know about Lantern. I know who your brother was.' He would go to the police at nine. At 21:20 she warned Hayes: 'He knows. I'll fix it.'" },
+      { heading: "The First Visitor", visual: "scene:office", camera: "pan-right", time: "22:08", text: "But Mercer had another appointment first. Marcus Reed, summoned over $4.2 million stolen through Halvorsen Consulting, returned by the garage. Around 22:17 he seized Mercer's wrists; the watch shattered on the desk edge and Reed's cufflink tore loose. At 22:21 he left Mercer alive and furious — and the watch frozen at a time that would mislead everyone." },
+      { heading: "A Manufactured Alibi", visual: "scene:flat", camera: "pull", time: "22:19", text: "In Carver Street, Sofia plugged a mouse-jiggler into her work computer to keep her VPN session 'active' and booked a cab to Dock Street. Behind the Tower, at 22:38, she let herself in with the spare keycard she would later claim to have lost." },
+      { heading: "Eleven Minutes", visual: "scene:security", camera: "pan-left", time: "22:41", text: "At the security desk, nobody was watching: Adrian Cole had slipped out to pay a bookie at the Drowned Anchor. From her phone, Sofia used the Vigil maintenance code emailed to her own inbox and switched the internal cameras off. She already intended not to be seen." },
+      { heading: "The Light That Leads", visual: "scene:office", camera: "push", time: "22:44", text: "Mercer was still at his keyboard at 22:43. At 22:44 her card opened his door. He did not plead; he sneered. He called her brother a mediocrity who 'couldn't handle losing'. She took the crystal lighthouse — Thomas's work, with Daniel's name on it — from the shelf and struck him once on the left temple." },
+      { heading: "The Locked Room", visual: "rain", camera: "pull", time: "22:51", text: "She wiped the award with her silk scarf and set it back, a few centimetres from its outline in the dust. She took his phone, because it held their messages, and switched it off. She pulled the door shut — it locked itself — and took service stairwell B, whose cameras end at the 40th floor. She was on Dock Street at 22:57, a small hooded figure in the rain." },
+      { heading: "The Truth Comes Out", visual: "room:sofia", camera: "push", text: "Every other suspect lied that night: Evelyn to hide an offshore account, Marcus to hide his theft and his fight, Adrian to hide his debts, Oliver to protect his source. But only one person's lies were built to hide a killing. Sofia Bennett was charged with the murder of Daniel Mercer." },
     ],
     timeline: [
       { time: "18:31", who: "Daniel", event: "Enters office 42-A." },
@@ -129,6 +130,7 @@ export const case001: CaseDef = {
       { time: "23:40", who: "Adrian", event: "Opens the office for the cleaner; body found." },
     ],
   },
+  story,
   hints: [
     { unless: { anyEvidence: ["watch", "computer", "door_lock"] }, text: "Start at the scene, Detective. Mercer's office hasn't been touched since forensics left. Search it properly — the obvious things and the things people tried to hide. Use 'Search closely' when you're in there." },
     { unless: { anyEvidence: ["autopsy"] }, text: "Dr. Voss's autopsy report is on my desk. Read it before you fix on a time of death." },

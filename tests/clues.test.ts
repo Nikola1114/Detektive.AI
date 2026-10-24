@@ -6,10 +6,11 @@ import { SETTINGS } from "../server/generator/pools.ts";
 import { accuse, act, askForClue, autoDeduce, connect, ev, hotspots, inspect, interrogate, refreshUnlocks, travel, type Ctx } from "../server/engine/engine.ts";
 import { emptyEvents } from "../server/engine/progression.ts";
 import { newCaseProgress, newPlayer } from "../server/engine/state.ts";
+import { chapterIndex, storyOf, storyView } from "../server/engine/story.ts";
 import type { CaseDef } from "../server/cases/types.ts";
 
 /** A player who does nothing but ask for clues and follow them exactly. */
-async function followClues(def: CaseDef, mode: "easy" | "normal") {
+async function followClues(def: CaseDef, mode: "easy" | "normal" | "story", onStep?: (ctx: Ctx) => void) {
   const ctx: Ctx = { save: newPlayer("bot"), def, p: newCaseProgress(def, mode), ev: emptyEvents() };
   for (let i = 0; i < 400; i++) {
     askForClue(ctx);
@@ -32,9 +33,14 @@ async function followClues(def: CaseDef, mode: "easy" | "normal") {
       await interrogate(ctx, a, { topicId: b });
     } else if (kind === "ev") {
       await interrogate(ctx, a, { evidenceId: b });
+    } else if (kind === "talk") {
+      await interrogate(ctx, a, { text: "Hello, detective here." });
+    } else if (kind === "go") {
+      travel(ctx, a);
     }
     refreshUnlocks(ctx);
     autoDeduce(ctx);
+    onStep?.(ctx);
   }
   throw new Error("Clues never led to the accusation");
 }
@@ -76,4 +82,28 @@ test("easy mode: no hidden clues, automatic deductions, suspects crack easily, u
     assert.equal(r.caseClosed, false);
   }
   assert.equal(ctx.p.status, "active");
+});
+
+test("story mode: following clues plays through every chapter of Case 001 in order", async () => {
+  const seen: number[] = [];
+  const ctx = await followClues(case001, "story", (c) => { const i = chapterIndex(case001, c.p); if (seen.at(-1) !== i) seen.push(i); });
+  const total = storyOf(case001).length;
+  assert.deepEqual(seen, Array.from({ length: total }, (_, i) => i), "chapters advance one at a time");
+  assert.equal(chapterIndex(case001, ctx.p), total - 1, "reaches the final chapter before accusing");
+  const view = storyView(case001, ctx.p)!;
+  assert.equal(view.id, "accusation");
+  assert.equal(JSON.stringify(view).includes("Sofia Bennett killed"), false);
+});
+
+test("story mode works for generated cases (generic chapters)", async () => {
+  for (const s of SETTINGS) {
+    const def = buildCase(s, "Beginner", 5);
+    const ctx = await followClues(def, "story");
+    assert.equal(storyView(def, ctx.p)!.id, "accusation");
+  }
+});
+
+test("story objectives never reference evidence that does not exist", () => {
+  const ids = new Set(case001.evidence.map((e) => e.id));
+  for (const c of storyOf(case001)) for (const o of c.objectives) for (const e of [...(o.done.evidence ?? []), ...(o.done.anyEvidence ?? [])]) assert.ok(ids.has(e), e);
 });

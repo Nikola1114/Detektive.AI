@@ -5,3 +5,4 @@ data/generated
 .env
 data/test
 e2e-shots
+data/e2e

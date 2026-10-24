@@ -2,6 +2,7 @@ import { MotionConfig } from "framer-motion";
 import { useEffect } from "react";
 import { audio } from "./audio";
 import { loadNeuralVoices } from "./voice";
+import { StoryDirector } from "./components/Story";
 import { Toasts } from "./components/Toasts";
 import { useGame } from "./game/GameContext";
 import { prefersReducedMotion } from "./game/settings";
@@ -52,6 +53,7 @@ export function App() {
       <div className="grain min-h-screen">
         <Screen />
         <Toasts />
+        <StoryDirector />
       </div>
     </MotionConfig>
   );

@@ -1,7 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { Award, ChevronLeft, ChevronRight, FastForward, RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { Resolution as Res } from "../../shared/api";
+import { motion } from "framer-motion";
+import { Award, RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type { Resolution as Res, Shot } from "../../shared/api";
+import { CinematicPlayer } from "../components/CinematicPlayer";
 import { api } from "../api";
 import { Button } from "../components/ui";
 import { useGame } from "../game/GameContext";
@@ -15,13 +16,30 @@ export function Resolution() {
   const { state, caseId, go, profile, startCase } = useGame();
   const [res, setRes] = useState<Res | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [i, setI] = useState(0);
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
     if (!caseId) return;
     api<Res>("GET", `/api/cases/${caseId}/resolution`).then(setRes).catch((e) => setError(e.message));
   }, [caseId, state?.status]);
+
+  // The reveal plays as a film: a title card, then one shot per scene.
+  const film = useMemo<Shot[]>(() => {
+    if (!res || !state) return [];
+    const places = state.locations.map((l) => `scene:${l.scene}` as const);
+    const cams = ["push", "pan-right", "pull", "pan-left"] as const;
+    const last = res.scenes.length - 1;
+    return [
+      { visual: "black", text: "", caption: res.title },
+      ...res.scenes.map((sc, k): Shot => ({
+        visual: sc.visual ?? (k === 0 ? "rain" : k === last ? `room:${res.culprit.id}` : places[k % places.length] ?? "city"),
+        camera: sc.camera ?? cams[k % cams.length],
+        caption: (sc.time ? `${sc.time} · ` : "") + sc.heading.toUpperCase(),
+        text: sc.text,
+        speaker: "narrator",
+      })),
+    ];
+  }, [res, state]);
 
   if (!state) return <NoCase />;
   if (error || !res) {
@@ -33,7 +51,6 @@ export function Resolution() {
     );
   }
 
-  const scene = res.scenes[i];
   const headline = res.status === "abandoned" ? "Case Abandoned" : res.status === "failed" ? "Case Taken Off Your Desk" : VERDICT[res.verdict ?? "solved"];
   const won = res.status === "solved";
 
@@ -42,23 +59,7 @@ export function Resolution() {
       <div className="rain" />
       <div className="vignette" />
       {!finished ? (
-        <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-6">
-          <AnimatePresence mode="wait">
-            <motion.div key={i} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.7 }} className="max-w-2xl text-center">
-              {scene.time && <div className="font-type text-lg text-amber-400">{scene.time}</div>}
-              <h2 className="mt-1 font-display text-4xl font-bold text-paper-100 sm:text-5xl">{scene.heading}</h2>
-              <p className="mt-6 text-lg leading-relaxed text-smoke-100">{scene.text}</p>
-            </motion.div>
-          </AnimatePresence>
-          <div className="mt-12 flex items-center gap-3">
-            <Button variant="ghost" onClick={() => setI((x) => Math.max(0, x - 1))} disabled={i === 0} aria-label="Previous"><ChevronLeft size={18} /></Button>
-            <span className="text-xs text-smoke-400">{i + 1} / {res.scenes.length}</span>
-            {i < res.scenes.length - 1
-              ? <Button variant="outline" onClick={() => setI((x) => x + 1)}>Continue<ChevronRight size={16} /></Button>
-              : <Button variant="primary" onClick={() => setFinished(true)}>Close the file<ChevronRight size={16} /></Button>}
-            <Button variant="ghost" onClick={() => setFinished(true)}><FastForward size={15} />Skip</Button>
-          </div>
-        </div>
+        <CinematicPlayer shots={film} cast={state.suspects} onDone={() => setFinished(true)} />
       ) : (
         <div className="relative z-10 mx-auto max-w-5xl p-6">
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
@@ -73,7 +74,7 @@ export function Resolution() {
               ["Deductions", `${res.stats.deductions}/${res.stats.deductionTotal}`],
               ["Contradictions", `${res.stats.contradictions}`],
               ["Accusations", `${res.stats.accusations}`],
-              ["Clues asked for", `${res.stats.hints}${res.stats.mode === "easy" ? " · Easy" : ""}`],
+              ["Clues asked for", `${res.stats.hints}${res.stats.mode === "easy" ? " · Easy" : res.stats.mode === "story" ? " · Story" : ""}`],
             ].map(([k, v]) => (
               <div key={k} className="panel p-3 text-center"><div className="font-display text-2xl font-bold text-paper-100">{v}</div><div className="text-[0.65rem] uppercase tracking-wider text-smoke-400">{k}</div></div>
             ))}
@@ -111,7 +112,7 @@ export function Resolution() {
           <div className="mt-8 flex flex-wrap justify-center gap-3 pb-10">
             <Button variant="primary" onClick={() => go("cases")}>Case files</Button>
             <Button onClick={() => go("profile")}>Detective profile</Button>
-            <Button variant="ghost" onClick={() => { setFinished(false); setI(0); }}>Replay the reveal</Button>
+            <Button variant="ghost" onClick={() => setFinished(false)}>Replay the reveal</Button>
             <Button variant="ghost" onClick={async () => { if (caseId && (await startCase(caseId, { reset: true }))) go("office?briefing"); }}><RotateCcw size={15} />Restart this case</Button>
           </div>
         </div>

@@ -5,7 +5,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import type { CaseSummary, NoteTag } from "../shared/api.ts";
+import type { CaseSummary, GameMode, NoteTag } from "../shared/api.ts";
 import { builtInCases, getCase } from "./cases/registry.ts";
 import { aiInfo } from "./dialogue/ai.ts";
 import {
@@ -15,6 +15,7 @@ import {
 import { checkAchievements, emptyEvents, profileView } from "./engine/progression.ts";
 import { newCaseProgress, type PlayerSave } from "./engine/state.ts";
 import { buildCaseState, buildResolution } from "./engine/view.ts";
+import { chapterIndex, noteChapter } from "./engine/story.ts";
 import { createPlayer, deletePlayer, loadPlayer, persist } from "./store.ts";
 import { generateAndRegister } from "./generator/generator.ts";
 
@@ -35,26 +36,28 @@ function route(method: string, pathPattern: string, handler: Handler, auth = tru
 
 // ───────────── helpers ─────────────
 
-function caseCtx(auth: Auth, caseId: string, create = false, mode?: "easy" | "normal"): Ctx {
+function caseCtx(auth: Auth, caseId: string, create = false, mode?: GameMode): Ctx {
   const def = getCase(caseId);
   if (!def) throw new GameError("Case not found.", 404);
   if (def.generated && !auth.save.generatedCases.includes(def.id)) throw new GameError("Case not found.", 404);
   let p = auth.save.cases[caseId];
   if (!p) {
     if (!create) throw new GameError("Case not started.", 404);
-    p = newCaseProgress(def, mode === "easy" ? "easy" : "normal");
+    p = newCaseProgress(def, mode === "easy" || mode === "story" ? mode : "normal");
     auth.save.cases[caseId] = p;
   }
   return { save: auth.save, def, p, ev: emptyEvents() };
 }
 
 /** Wraps a mutation: stamps progress, re-checks achievements, saves, returns events + fresh state. */
-async function mutate<T>(auth: Auth, caseId: string, fn: (ctx: Ctx) => T | Promise<T>, create = false, mode?: "easy" | "normal") {
+async function mutate<T>(auth: Auth, caseId: string, fn: (ctx: Ctx) => T | Promise<T>, create = false, mode?: GameMode) {
   const ctx = caseCtx(auth, caseId, create, mode);
+  const before = chapterIndex(ctx.def, ctx.p);
   const result = await fn(ctx);
   ctx.p.updatedAt = Date.now();
   refreshUnlocks(ctx);
   autoDeduce(ctx);
+  noteChapter(ctx, before);
   checkAchievements(ctx.save, ctx.def, ctx.p, ctx.ev);
   persist(auth.hash);
   return { result, events: ctx.ev, state: buildCaseState(ctx.def, ctx.p), profile: profileView(ctx.save) };

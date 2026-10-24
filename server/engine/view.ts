@@ -7,7 +7,8 @@ import type { CaseState, EvidenceView, Resolution, TimelineEntry } from "../../s
 import type { CaseDef } from "../cases/types.ts";
 import { availableTopics } from "../dialogue/authored.ts";
 import { MAX_ACCUSATIONS, MIN_EVIDENCE, currentHint, ev } from "./engine.ts";
-import { has, type CaseProgress } from "./state.ts";
+import { has, isEasy, type CaseProgress } from "./state.ts";
+import { storyView } from "./story.ts";
 
 function timeKey(t: string): number {
   const m = /^(\d{1,2}):(\d{2})/.exec(t);
@@ -97,12 +98,13 @@ export function buildCaseState(def: CaseDef, p: CaseProgress): CaseState {
       methods: def.accusation.methods,
       sequences: def.accusation.sequences,
       minEvidence: MIN_EVIDENCE,
-      attemptsLeft: p.mode === "easy" ? 99 : Math.max(0, MAX_ACCUSATIONS - p.accusations.length),
+      attemptsLeft: isEasy(p) ? 99 : Math.max(0, MAX_ACCUSATIONS - p.accusations.length),
     },
     accusations: p.accusations.map((a) => ({ at: a.at, suspectId: a.suspectId, verdict: a.verdict })),
     hint: currentHint(def, p),
     mode: p.mode ?? "normal",
     hintsUsed: p.hintsUsed ?? 0,
+    story: p.mode === "story" ? storyView(def, p) ?? undefined : undefined,
     startedAt: p.startedAt,
     updatedAt: p.updatedAt,
   };

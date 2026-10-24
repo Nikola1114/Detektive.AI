@@ -16,6 +16,31 @@ export type SceneKind = "office" | "police" | "security" | "bar" | "penthouse" |
 export type NoteTag = "note" | "fact" | "claim" | "theory";
 
 /** How a suspect's lines are read aloud by the browser's speech engine. */
+export type GameMode = "easy" | "normal" | "story";
+
+/** What a cutscene shot shows. Scene kinds draw that location's backdrop. */
+export type ShotVisual = "city" | "tower" | "rain" | "title" | "black" | `scene:${SceneKind}` | `portrait:${string}` | `room:${string}`;
+
+/** One shot of a story cutscene: a picture, a camera move and a line of narration or dialogue. */
+export interface Shot {
+  visual: ShotVisual;
+  text: string;
+  /** "narrator", "kane", or a suspect id. */
+  speaker?: string;
+  camera?: "push" | "pull" | "pan-left" | "pan-right" | "still";
+  /** Big caption shown over the picture (chapter cards, times). */
+  caption?: string;
+}
+
+export interface StoryView {
+  index: number;
+  total: number;
+  id: string;
+  title: string;
+  intro: Shot[];
+  objectives: { text: string; done: boolean }[];
+}
+
 export interface VoiceProfile {
   gender: "female" | "male";
   pitch: number; // 0.5–1.5
@@ -178,8 +203,10 @@ export interface CaseState {
   accusation: AccusationOptions;
   accusations: AccusationRecord[];
   hint: string;
-  mode: "easy" | "normal";
+  mode: GameMode;
   hintsUsed: number;
+  /** Story mode only: the current chapter. */
+  story?: StoryView;
   startedAt: number;
   updatedAt: number;
 }
@@ -192,6 +219,8 @@ export interface GameEvents {
   xp: number;
   achievements: { id: string; title: string }[];
   rankUp?: string;
+  /** Story mode: a new chapter began. */
+  chapter?: { index: number; title: string };
 }
 
 export interface InspectResult {
@@ -221,7 +250,7 @@ export interface InterrogateResult {
   citedEvidence?: string;
 }
 
-export interface ResolutionScene { heading: string; time?: string; text: string; }
+export interface ResolutionScene { heading: string; time?: string; text: string; visual?: ShotVisual; camera?: Shot["camera"]; }
 
 export interface AccuseResult {
   verdict: Verdict;
@@ -240,7 +269,7 @@ export interface Resolution {
   verdict?: Verdict;
   scenes: ResolutionScene[];
   truths: { suspect: string; text: string }[];
-  stats: { cluesFound: number; cluesTotal: number; deductions: number; deductionTotal: number; contradictions: number; accusations: number; minutes: number; hints: number; mode: "easy" | "normal" };
+  stats: { cluesFound: number; cluesTotal: number; deductions: number; deductionTotal: number; contradictions: number; accusations: number; minutes: number; hints: number; mode: GameMode };
 }
 
 export interface Achievement { id: string; title: string; description: string; unlockedAt?: number; }

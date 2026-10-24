@@ -34,9 +34,20 @@ The interrogation room is a monochrome scene: the suspect sits across the table 
 - **Voices.** Suspects speak their lines aloud, each with their own voice. *Standard* uses the browser's built-in speech (instant; best in Microsoft Edge). *Realistic* runs the open-source Kokoro neural voice model on the player's own computer. It's free with no key, downloads about 90 MB once from Hugging Face, and runs in a background worker; if the download fails, the game falls back to standard voices. Click the microphone to ask out loud (Edge or Chrome). Voice quality, volume and speed are in Settings.
 - **AI answers (optional).** With an `ANTHROPIC_API_KEY`, suspects answer typed or spoken questions in their own words, within the safety rules described below.
 
+## Story mode
+
+Pick **Story** when a case starts (or switch to it in Settings). The case is told like a film:
+
+- Every chapter opens with a cutscene: letterboxed, with film grain, flicker, slow camera moves over the case artwork, typewriter subtitles and a narrator reading the lines aloud. Sgt. Kane and the suspects speak their own lines. Click or press Space to move on, Esc or **Skip** to skip it, and **Replay chapter scene** to watch it again.
+- Case 001 has seven chapters (The Scene, The Tower Remembers, Five Stories, Cracks, Lantern, The Warrant, The Accusation). Each one has a checklist of objectives. The next chapter starts as soon as the checklist is done.
+- **Ask for a clue** points at whatever the current chapter still needs.
+- Story mode uses the relaxed Easy rules.
+- Generated cases get a simpler five-chapter story built from their own content.
+- The final reveal plays as a film in every mode.
+
 ## Difficulty, clues and giving up
 
-- **Easy or Detective:** you choose when a case starts, and you can switch in Settings. In Easy mode, nothing in a room is hidden, deductions are made automatically as soon as you have both pieces of evidence, suspects confess the moment you show the right evidence, and you can accuse as often as you like. After each attempt you're told which parts (motive, method, sequence) were right.
+- **Story, Easy or Detective:** you choose when a case starts, and you can switch in Settings. In Easy mode, nothing in a room is hidden, deductions are made automatically as soon as you have both pieces of evidence, suspects confess the moment you show the right evidence, and you can accuse as often as you like. After each attempt you're told which parts (motive, method, sequence) were right.
 - **Ask for a clue:** Sgt. Kane suggests the most useful next step: an object you haven't examined, a question to ask, evidence to show someone, or two items to link. In Detective mode the first clue is vague and asking again gives the exact step. A test proves that a player who does nothing but follow clues can solve every case.
 - **I give up:** reveals the full solution and closes the case. Restart it from Case Files.
 

@@ -1,17 +1,29 @@
 /** Help when you're stuck: a difficulty picker, "Ask for a clue", and "I give up". */
 import { AnimatePresence, motion } from "framer-motion";
-import { Flag, Lightbulb, X } from "lucide-react";
+import { Clapperboard, Flag, Lightbulb, X } from "lucide-react";
+import type { GameMode } from "../../shared/api";
 import { useState } from "react";
 import { useGame } from "../game/GameContext";
 import { speak, voiceSupported } from "../voice";
 import { Button, Modal } from "./ui";
 
-const KANE = { gender: "female" as const, pitch: 0.95, rate: 1, seed: 6, neural: "af_sarah" };
+export const KANE = { gender: "female" as const, pitch: 0.95, rate: 1, seed: 6, neural: "af_sarah" };
 
-export function ModePicker({ open, onClose, onPick, title = "How do you want to play?" }: { open: boolean; onClose: () => void; onPick: (mode: "easy" | "normal") => void; title?: string }) {
+export function ModePicker({ open, onClose, onPick, title = "How do you want to play?" }: { open: boolean; onClose: () => void; onPick: (mode: GameMode) => void; title?: string }) {
   return (
     <Modal open={open} onClose={onClose} title={title} wide>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
+        <button onClick={() => onPick("story")} className="relative flex flex-col justify-start rounded-xl border border-blood-500/50 bg-blood-500/5 p-5 text-left transition hover:border-blood-400 hover:bg-blood-500/10">
+          <span className="absolute right-3 top-3 rounded-full bg-blood-500/20 px-2 py-0.5 text-[0.6rem] uppercase tracking-wider text-blood-300">New</span>
+          <div className="flex items-center gap-2 font-display text-2xl font-bold text-blood-300"><Clapperboard size={20} />Story</div>
+          <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-smoke-200">
+            <li>Played like a film: cinematic scenes with narration open every chapter</li>
+            <li>Seven chapters, each with a checklist of what to do next</li>
+            <li>Clues point at the current chapter's goals</li>
+            <li>Relaxed rules, like Easy</li>
+            <li>The finale plays out as a movie</li>
+          </ul>
+        </button>
         <button onClick={() => onPick("easy")} className="flex flex-col justify-start rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-5 text-left transition hover:border-emerald-400 hover:bg-emerald-500/10">
           <div className="font-display text-2xl font-bold text-emerald-300">Easy</div>
           <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-smoke-200">
@@ -90,7 +102,7 @@ export function GiveUpButton({ className = "", compact = false }: { className?: 
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title="Give up and see the solution?">
         <p className="text-smoke-200">You'll see who did it and how, and the case will be closed without credit. You can restart it afterwards from Case Files.</p>
-        {state.mode !== "easy" && <p className="mt-3 text-sm text-emerald-300">Tip: you could also switch to Easy mode in Settings, or use "Ask for a clue".</p>}
+        {state.mode === "normal" && <p className="mt-3 text-sm text-emerald-300">Tip: you could also switch to Easy mode in Settings, or use "Ask for a clue".</p>}
         <div className="mt-5 flex flex-wrap gap-3">
           <Button variant="danger" onClick={async () => { await mutate("POST", "/abandon"); setOpen(false); go("resolution"); }}>Yes — show me the solution</Button>
           <Button variant="ghost" onClick={() => setOpen(false)}>Keep investigating</Button>

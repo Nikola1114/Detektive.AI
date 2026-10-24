@@ -4,7 +4,7 @@
  * they must never be serialised to the client wholesale; the engine projects
  * a sanitised view (see server/engine/view.ts).
  */
-import type { EvidenceType, Mood, PortraitSpec, ResolutionScene, SceneKind, VoiceProfile } from "../../shared/api.ts";
+import type { EvidenceType, Mood, PortraitSpec, ResolutionScene, SceneKind, Shot, VoiceProfile } from "../../shared/api.ts";
 
 /** A condition over investigation progress. Every listed clause must hold. */
 export interface Cond {
@@ -14,6 +14,9 @@ export interface Cond {
   anyDeductions?: string[];
   flags?: string[];
   notFlags?: string[];
+  interviewed?: string[]; // suspects questioned at least once
+  visited?: string[]; // locations entered
+  minDeductions?: number;
 }
 
 /** Extra conditions that only make sense inside a conversation. */
@@ -140,6 +143,14 @@ export interface DeductionDef {
 
 export interface Option { id: string; label: string; }
 
+/** Story mode: a chapter opens with a cutscene and ends when every objective is done. */
+export interface ChapterDef {
+  id: string;
+  title: string;
+  intro: Shot[];
+  objectives: { text: string; done: Cond }[];
+}
+
 export interface CaseDef {
   id: string;
   title: string;
@@ -171,5 +182,7 @@ export interface CaseDef {
   };
   /** Progress-sensitive hints from the partner character. First match wins. */
   hints: { when?: Cond; unless?: Cond; text: string }[];
+  /** Story mode chapters. Cases without one get a generic story (see engine/story.ts). */
+  story?: ChapterDef[];
   generated?: boolean;
 }

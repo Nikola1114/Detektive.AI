@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CaseSummary } from "../../shared/api";
 import { api } from "../api";
 import { Badge, Button, SectionTitle } from "../components/ui";
+import type { GameMode } from "../../shared/api";
 import { ModePicker } from "../components/CaseHelp";
 import { useGame } from "../game/GameContext";
 
@@ -30,9 +31,9 @@ export function CaseSelect() {
   const [generating, setGenerating] = useState(false);
 
   const [picking, setPicking] = useState<CaseSummary | null>(null);
-  const begin = async (c: CaseSummary, mode?: "easy" | "normal") => {
+  const begin = async (c: CaseSummary, mode?: GameMode) => {
     setPicking(null);
-    if (await startCase(c.id, { mode })) go(c.status === "new" ? "office?briefing" : c.status === "active" ? "office" : "resolution");
+    if (await startCase(c.id, { mode })) go(c.status === "new" ? (mode === "story" ? "office" : "office?briefing") : c.status === "active" ? "office" : "resolution");
   };
   const open = (c: CaseSummary) => (c.status === "new" ? setPicking(c) : void begin(c));
 

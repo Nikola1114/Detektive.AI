@@ -4,7 +4,7 @@
  * All game state comes from the server; this layer only caches the latest view.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { CaseState, CaseSummary, GameEvents, Profile, ServerInfo } from "../../shared/api";
+import type { CaseState, CaseSummary, GameEvents, GameMode, Profile, ServerInfo } from "../../shared/api";
 import { api, ApiError, forgetSession, type Mutation } from "../api";
 import { audio } from "../audio";
 import { applySettingsToDocument, loadSettings, storeSettings, type Settings } from "./settings";
@@ -28,7 +28,7 @@ interface Game {
   toasts: Toast[];
   go: (path: string) => void;
   setSettings: (patch: Partial<Settings>) => void;
-  startCase: (id: string, opts?: { reset?: boolean; mode?: "easy" | "normal" }) => Promise<boolean>;
+  startCase: (id: string, opts?: { reset?: boolean; mode?: GameMode }) => Promise<boolean>;
   mutate: <R = unknown>(method: string, path: string, body?: unknown) => Promise<R | undefined>;
   refreshCases: () => Promise<void>;
   setProfile: (p: Profile) => void;
@@ -78,6 +78,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     for (const u of ev.unlocks) { notify("unlock", u.name); audio.sfx("unlock"); }
     for (const r of ev.revelations) notify("info", r);
     for (const a of ev.achievements) { notify("achievement", a.title); audio.sfx("achievement"); }
+    if (ev.chapter) { notify("unlock", `Chapter ${ev.chapter.index + 1}: ${ev.chapter.title}`); audio.sfx("sting"); }
     if (ev.rankUp) notify("rank", ev.rankUp);
     if (ev.xp > 0) notify("xp", `+${ev.xp} XP`);
   }, [notify]);
@@ -120,7 +121,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const startCase = useCallback(async (id: string, opts?: { reset?: boolean; mode?: "easy" | "normal" }) => {
+  const startCase = useCallback(async (id: string, opts?: { reset?: boolean; mode?: GameMode }) => {
     setBusy(true);
     try {
       const m = await api<Mutation>("POST", `/api/cases/${id}/${opts?.reset ? "reset" : "start"}`, { mode: opts?.mode });
